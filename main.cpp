@@ -4,37 +4,36 @@
 //   PIN DECLARATIONS
 //
 //
-DigitalOut FLdirection(PTB18);
-DigitalOut FRdirection(PTA4);
-DigitalOut magDirection(PTB19);
-PwmOut stepFL(PTD3);
-PwmOut stepFR(PTA5);
-PwmOut magArm(PTA12);
-InterruptIn killAll(PTC3);
-DigitalIn Start(PTC12);
-DigitalOut enableH(PTC11);
-DigitalOut highH(PTC10);
-DigitalOut enableL(PTC11);
-DigitalOut highL(PTC7);
-I2C i2c(PTC9, PTC8); //pins for I2C communication (SDA, SCL)
-Serial pc(USBTX, USBRX);
-DigitalOut LED(PTC4);
-DigitalOut green(LED_GREEN);
+DigitalOut FLdirection(PTB18);    //Front left motor direction pin
+DigitalOut FRdirection(PTA4);     //Front right motor direction pin
+DigitalOut magDirection(PTB19);   //Magnet arm motor direction pin
+PwmOut stepFL(PTD3);              //Front left motor pwm speed pin
+PwmOut stepFR(PTA5);              //Front right motor pwm speed pin
+PwmOut magArm(PTA12);             //Magnet arm motor pwm speed pin
+InterruptIn killAll(PTC3);        //Button for the kill switch
+DigitalIn Start(PTC12);           //Button for starting the program
+DigitalOut enableH(PTC11);        //Enable pin for the H-Brdige, turns magnet on or off
+DigitalOut highH(PTC10);          //One of the current direction control pins on the H-Bridge
+DigitalOut highL(PTC7);           //One of the current direction control pins on the H-Bridge
+I2C i2c(PTC9, PTC8);              //pins for I2C communication (SDA, SCL)
+Serial pc(USBTX, USBRX);          //Serial computer screen printing connection
+DigitalOut LED(PTC4);             //LED control pin for the RGB sensor
+DigitalOut green(LED_GREEN);      //Control pin for the RGB sensor
 //
 //
 //   PROTOTYPE FUNCTION DECLARATIONS
 //
 //
-void move(float dist, bool direction);
-void grabToken();//Picks up the token for reading
-void dropToken();//Drops the token off
-void kill();
-void turnRight();
-void turnLeft();
-void rot180(); //Turns the robot around
-int findColor(); //Figures out what color the disk is and makes a decision on where to take the disk
-void findPathReturn(int color, int i, float scale, float); //Determines where to take the token based on the color and its relative location and then returns to the previous position
-void returnHome(); //Returns to the home white square
+void move(float dist, bool direction);                        //Moves the robot in a certain direction a certain distance in meters
+void grabToken();                                             //Picks up the token for reading
+void dropToken();                                             //Drops the token off
+void kill();                                                  //Stops the robot
+void turnRight();                                             //Makes the robot turn 90 degrees to the right
+void turnLeft();                                              //Makes the robot turn 90 degrees to the left
+void rot180();                                                //Turns the robot 180 degrees around
+int findColor();                                              //Figures out what color the token is and returns an integer that represents the color of the token
+void findPathReturn(int color, int i, float scale, float);    //Determines where to take the token based on the color and its relative location and then returns to the previous position
+void returnHome();                                            //Returns to the home white square
 //
 //
 //    GLOBAL VARIABLES
@@ -42,18 +41,17 @@ void returnHome(); //Returns to the home white square
 //
 const int FORWARD = 0;
 const int BACKWARD = 1;
-const float stepSize = 0.001212; //in meters
-const float FREQUENCY = 500; //steps per second
+const float stepSize = 0.001212;      //In meters
+const float FREQUENCY = 500;          //Steps per second
 int sensor_addr = 41 << 1;
 float leg;
 float scale;
 int color;
-int TIME = 100; //in seconds, this is where you input the round time duration
-Timeout timer; // attach this to return home function, set according to round time
+int TIME = 100;                       //In seconds, this is where you input the round time duration
+Timeout timer;                        //Attach this to return home function, set according to round time
 //
 //
-//
-//
+//   Main Function
 //
 //
 int main()
@@ -147,15 +145,16 @@ int main()
     }
 }
 //
+// ..........................
+// .... Helper Functions ....
+// ..........................
 //
 //
 //
-//   Functions...
+//   Move Function
+//   Moves the robot (meters)
 //
-//
-//
-//
-void move(float dist, bool direction) //Moves the robot (meters)
+void move(float dist, bool direction)
 {
     //
     //
@@ -191,7 +190,7 @@ void move(float dist, bool direction) //Moves the robot (meters)
 }
 //
 //
-//
+//   Grab Token Function
 //
 //
 void grabToken()
@@ -230,7 +229,7 @@ void grabToken()
 }
 //
 //
-//
+//   Drop Token Function
 //
 //
 void dropToken()
@@ -268,7 +267,7 @@ void dropToken()
 }
 //
 //
-//
+//   Turn Right Function
 //
 //
 void turnRight(float dist, bool direction)
@@ -302,7 +301,7 @@ void turnRight(float dist, bool direction)
 }
 //
 //
-//
+//   Turn Left Function
 //
 //
 void turnLeft(float dist, bool direction)
@@ -336,7 +335,7 @@ void turnLeft(float dist, bool direction)
 }
 //
 //
-//
+//   Rotate 180 Degrees Function
 //
 //
 void rot180()
@@ -370,19 +369,19 @@ void rot180()
 }
 //
 //
+//   Kill Switch Function
+//   Stops the machine
 //
-//
-//
-void kill() //Kill switch to stop the machine
+void kill()
 {
     exit(0);
 }
 //
 //
+//   Find Color Function
+//   Figures out what color the disk is and makes a decision on where to take the disk
 //
-//
-//
-int findColor()  //Figures out what color the disk is and makes a decision on where to take the disk
+int findColor()
 {
     //
     //
@@ -411,9 +410,13 @@ int findColor()  //Figures out what color the disk is and makes a decision on wh
         i2c.write(sensor_addr,blue_reg,1, true);
         i2c.read(sensor_addr,blue_data,2, false);
         int blue_value = ((int)blue_data[1] << 8) | blue_data[0];
-
-
-        //1=red,2=green,3=blue,4=cyan,5=magenta,6=yellow,7=gray,8=error, 9=nothing
+        //
+        //
+        //   Return the color value from the reading
+        //
+        //
+        //   1=red, 2=green, 3=blue, 4=cyan, 5=magenta, 6=yellow, 7=gray, 8=error, 9=nothing
+        //
         if(blue_value<10000 && red_value>10000) {
             return(1);
         } else if(green_value>18000 && blue_value<30000) {
@@ -433,551 +436,712 @@ int findColor()  //Figures out what color the disk is and makes a decision on wh
         } else {
             return(9);
         }
+        //
+        //
         // print sensor readings
-
+        //
+        //
         //pc.printf("Clear (%d), Red (%d), Green (%d), Blue (%d)\n", clear_value, red_value, green_value, blue_value);
         //wait(0.5);
     }
-//This function decides where to go based on its reletive position and the color written in from the findColor function. Indexes/Positions 3 & 7 not used
-    //          3
-    //2*--------*--------*4
-    // |                 |
-    // |                 |
-    // |                 |
-    // |                 |
-    //1*                 *5
-    // |                 |
-    // |                 |
-    // |                 |
-    // |                 |
-    // *--------*--------*6
-    // 0        7
-    void findPathReturn(int color, int i, float scale, float leg);
+}
+//
+//
+//   Find Path Return Function
+//   This next function decides where to go based on its reletive position and
+//   the color written in from the findColor function.
+//   Indexes/Positions 3 & 7 not used.
+//
+//    2         3         4
+//     *--------*--------*
+//     |                 |
+//     |                 |
+//     |                 |
+//     |                 |
+//   1 *                 * 5
+//     |                 |
+//     |                 |
+//     |                 |
+//     |                 |
+//     *--------*--------*
+//    0        7         6
+//
+//
+void findPathReturn(int color, int i, float scale, float leg)
+{
+    //
+    //
+    //   RED
+    //
+    //
+    //   condition for return red at index 0
+    //
+    if(  i == 0 && color == 1 )
     {
-        /*******************************************************************///Red
-        if(  i == 0 && color == 1 ) { //condition for return red at index 0
-            move((2*leg + 0.3048*scale), FORWARD);
-            turnLeft();
-            move((0.3048*scale), FORWARD);
-            dropToken();
-            rot180();
-            move((0.3048*scale), FORWARD);
-            turnRight();
-            move((2*leg + 0.3048*scale), FORWARD);
-            rot180();
+        move((2*leg + 0.3048*scale), FORWARD);
+        turnLeft();
+        move((0.3048*scale), FORWARD);
+        dropToken();
+        rot180();
+        move((0.3048*scale), FORWARD);
+        turnRight();
+        move((2*leg + 0.3048*scale), FORWARD);
+        rot180();
+    }
+    //
+    //   condition for return red at index 1
+    //
+    if( i == 1 && color == 1 )
+    {
+        move((leg + 0.3048*scale), FORWARD);
+        turnLeft();
+        move((0.3048*scale), FORWARD);
+        dropToken();
+        rot180();
+        move((0.3048*scale), FORWARD);
+        turnRight();
+        move((leg + 0.3048*scale), FORWARD);
+        rot180();
+    }
+    //
+    //   condition for return red at index 2
+    //
+    if( i == 2 && color == 1 )
+    {
+        rot180();
+        move((0.3048*scale), FORWARD);
+        turnRight();
+        move((0.3048*scale), FORWARD);
+        dropToken();
+        rot180();
+        move((0.3048*scale), FORWARD);
+        turnLeft();
+        move((0.3048*scale), FORWARD);
+    }
+    //
+    //   condition for return red at index 4
+    //
+    if( i == 4 && color == 1 )
+    {
+        turnRight();
+        move(2*leg + 0.3048*scale, FOWARD);
+        turnRight();
+        move(0.3046*scale, FORWARD);
+        dropToken();
+        rot180();
+        move(0.3046*scale, FORWARD);
+        turnLeft();
+        move(2*leg + 0.3048*scale, FOWARD);
+        turnRight();
+    }
+    //
+    //   condition for return red at index 5
+    //
+    if( i == 5 && color == 1 )
+    {
+        rot180();
+        move(leg + 0.3046*scale, FORWARD);
+        turnLeft();
+        move(2*leg + 0.3046*scale, FORWARD);
+        dropToken();
+        rot180();
+        move(2*leg + 0.3046*scale, FORWARD);
+        turnRight();
+        move(leg + 0.3046*scale, FORWARD);
+    }
+    //
+    //   condition for return red at index 6
+    //
+    if( i == 6 && color == 1 )
+    {
+        turnRight();
+        move(2*leg + 0.3046*scale, FORWARD);
+        turnLeft();
+        move(2*leg + 0.3046*scale, FORWARD);
+        dropToken();
+        rot180();
+        move(2*leg + 0.3046*scale, FORWARD);
+        turnRight();
+        move(2*leg + 0.3046*scale, FORWARD);
+    }
+    //
+    //
+    //   GREEN
+    //
+    //
+    //   condition for return red at index 0
+    //
+    if( i == 0 && color == 2 )
+    {
+        move(leg, FORWARD);
+        turnLeft();
+        move(0.3046*scale);
+        dropToken();
+        rot180();
+        move(0.3046*scale);
+        turnRight();
+        move(leg, FORWARD);
+        rot180();
+    }
+    //
+    //   condition for return green at index 1
+    //
+    if( i == 1 && color == 2 )
+    {
+        turnLeft();
+        move(0.3046*scale);
+        dropToken();
+        rot180();
+        move(0.3046*scale);
+        turnLeft();
+    }
+    //
+    //   condition for return green at index 2
+    //
+    if( i == 2 && color == 2 )
+    {
+        turnRight();
+        move(leg, FORWARD);
+        turnRight();
+        move(0.3046*scale);
+        dropToken();
+        rot180();
+        move(0.3046*scale);
+        turnLeft();
+        move(leg, FORWARD);
+        turnRight();
+    }
+    //
+    //   condition for return green at index 4
+    //
+    if( i == 4 && color == 2 )
+    {
+        turnRight();
+        move(2*leg + 0.3046*scale, FORWARD);
+        turnLeft();
+        move(leg, FORWARD);
+        dropToken();
+        rot180();
+        move(leg, FORWARD);
+        turnRight();
+        move(2*leg + 0.3046*scale, FORWARD);
+        turnRight();
+    }
+    //
+    //   condition for return green at index 5
+    //
+    if( i == 5 && color == 2 )
+    {
+        turnRight();
+        move(2*leg + 0.3046*scale, FORWARD);
+        dropToken();
+        rot180();
+        move(2*leg + 0.3046*scale, FORWARD);
+        turnRight();
+    }
+    //
+    //   condition for return green at index 6
+    //
+    if( i == 6 && color == 2 )
+    {
+        move(2*leg + 0.3046*scale, FORWARD);
+        turnRight();
+        move(leg + 0.3046*scale, FORWARD);
+        dropToken();
+        rot180();
+        move(leg + 0.3046*scale, FORWARD);
+        turnLeft();
+        move(leg + 0.3046*scale, FORWARD);
+        rot180();
+    }
+    //
+    //
+    //   BLUE
+    //
+    //
+    //   condition for return red at index 0
+    //
+    if( i == 0 && color == 3 )
+    {
+        rot180();
+        move(0.3048*scale, FORWARD);
+        turnRight();
+        move(0.3048*scale, FORWARD);
+        dropToken();
+        rot180();
+        move(0.3048*scale, FORWARD);
+        turnLeft();
+        move(0.3048*scale, FORWARD);
+    }
+    //
+    //   condition for return blue at index 1
+    //
+    if( i == 1 && color == 3 )
+    {
+        rot180();
+        move((leg + 0.3048*scale), FORWARD);
+        turnRight();
+        move(0.3048*scale, FORWARD);
+        dropToken();
+        rot180();
+        move(0.3048*scale, FORWARD);
+        turnLeft();
+        move((leg + 0.3048*scale), FORWARD);
+    }
+    //
+    //   condition for return blue at index 2
+    //
+    if( i == 2 && color == 3 )
+    {
+        turnRight();
+        move((2*leg + 0.3048*scale), FORWARD);
+        turnRight();
+        move(0.3048*scale, FORWARD);
+        dropToken();
+        rot180();
+        move(0.3048*scale, FORWARD);
+        turnLeft();
+        move((2*leg + 0.3048*scale), FORWARD);
+        turnRight();
+    }
+    //
+    //   condition for return blue at index 4
+    //
+    if( i == 4 && color == 3 )
+    {
+        turnRight();
+        move((2*leg + 0.3048*scale), FORWARD);
+        turnRight();
+        move((2*leg) + (0.3048*scale), FORWARD);
+        dropToken();
+        rot180();
+        move((2*leg + 0.3048*scale), FORWARD);
+        turnLeft();
+        move((2*leg) + (0.3048*scale), FORWARD);
+        turnRight();
+    }
+    //
+    //   condition for return blue at index 5
+    //
+    if( i == 5 && color == 3 )
+    {
+        move(leg + 0.3048*scale, FORWARD);
+        turnRight();
+        move(2*leg + 0.3048*scale, FORWARD);
+        dropToken();
+        rot180();
+        move(2*leg + 0.3048*scale, FORWARD);
+        turnLeft();
+        move(leg + 0.3048*scale, FORWARD);
+        rot180();
+    }
+    //
+    //   condition for return blue at index 6
+    //
+    if( i == 6 && color == 3 )
+    {
+        move(2*leg + 0.3048*scale, FORWARD);
+        turnLeft();
+        move(0.3048*scale, FORWARD);
+        dropToken();
+        rot180();
+        move(0.3048*scale, FORWARD);
+        turnRight();
+        move(2*leg + 0.3048*scale, FORWARD);
+        rot180();
+    }
+    //
+    //
+    //   CYAN
+    //
+    //
+    //   condition for return red at index 0
+    //
+    if( i == 0 && color == 4 )
+    {
+        move(2*leg + 0.3046*scale, FORWARD)
+        turnRight();
+        move(2*leg + 0.3046*scale, FORWARD)
+        dropToken();
+        rot180();
+        move(2*leg + 0.3046*scale, FORWARD)
+        turnLeft();
+        move(2*leg + 0.3046*scale, FORWARD)
+        rot180();
+    }
+    //
+    //   condition for return Cyan at index 1
+    //
+    if( i == 1 && color == 4 )
+    {
+        move(leg + 0.3046*scale, FOWARD);
+        turnRight();
+        move(2*leg + 0.3046*scale, FOWARD);
+        dropToken();
+        rot180();
+        move(2*leg + 0.3046*scale, FOWARD);
+        turnleft();
+        move(leg + 0.3046*scale, FOWARD);
+        rot180();
 
-        }
-        if( i == 1 && color == 1 ) { //condition for return red at index 1
-            move((leg + 0.3048*scale), FORWARD);
-            turnLeft();
-            move((0.3048*scale), FORWARD);
-            dropToken();
-            rot180();
-            move((0.3048*scale), FORWARD);
-            turnRight();
-            move((leg + 0.3048*scale), FORWARD);
-            rot180();
+    }
+    //
+    //   condition for return Cyan at index 2
+    //
+    if( i == 2 && color == 4 )
+    {
+        move(2*leg + 0.3046*scale, FOWARD);
+        turnLeft();
+        move(0.3046*scale);
+        dropToken();
+        rot180();
+        move(0.3046*scale);
+        turnRight();
+        move(2*leg + 0.3046*scale, FOWARD);
+        rot180();
 
+    }
+    //
+    //   condition for return Cyan at index 4
+    //
+    if( i == 4 && color == 4 )
+    {
+        rot180();
+        move(0.3046*scale, FORWARD);
+        turnRight();
+        move(0.3046*scale, FORWARD);
+        dropToken();
+        rot180();
+        move(0.3046*scale, FORWARD);
+        turnLeft();
+        move(0.3046*scale, FORWARD);
+        turnleft();
+        move(0.3046*scale, FORWARD);
+        turnRight();
 
-        }
-        if( i == 2 && color == 1 ) { //condition for return red at index 2
-            rot180();
-            move((0.3048*scale), FORWARD);
-            turnRight();
-            move((0.3048*scale), FORWARD);
-            dropToken();
-            rot180();
-            move((0.3048*scale), FORWARD);
-            turnLeft();
-            move((0.3048*scale), FORWARD);
+    }
+    //
+    //   condition for return Cyan at index 5
+    //
+    if( i == 5 && color == 4 )
+    {
+        rot180();
+        move(leg + 0.3046*scale, FORWARD);
+        turnRight();
+        move(0.3046*scale, FORWARD);
+        dropToken();
+        rot180();
+        move(0.3046*scale, FORWARD);
+        turnLeft();
+        move(leg + 0.3046*scale, FORWARD);
 
+    }
+    //
+    //   condition for return Cyan at index 6
+    //
+    if( i == 6 && color == 4 )
+    {
+        turnRight();
+        move(2*leg + 0.3046*scale, FORWARD);
+        turnRight();
+        move(0.3046*scale, FORWARD);
+        dropToken();
+        rot180();
+        move(0.3046*scale, FORWARD);
+        turnLeft();
+        move(leg + 0.3046*scale, FORWARD);
+        turnRight();
 
-        }
-        if( i == 4 && color == 1 ) { //condition for return red at index 4
-            turnRight();
-            move(2*leg + 0.3048*scale, FOWARD);
-            turnRight();
-            move(0.3046*scale, FORWARD);
-            dropToken();
-            rot180();
-            move(0.3046*scale, FORWARD);
-            turnLeft();
-            move(2*leg + 0.3048*scale, FOWARD);
-            turnRight();
+    }
+    //
+    //
+    //   MAGENTA
+    //
+    //
+    //   condition for return red at index 0
+    //
+    if( i == 0 && color == 5 )
+    {
+        move(leg, FORWARD);
+        turnRight();
+        move(2*leg + 0.3046*scale);
+        dropToken();
+        rot180();
+        move(2*leg + 0.3046*scale);
+        turnLeft();
+        move(leg, FORWARD);
+        rot180();
+    }
+    //
+    //   condition for return Magenta at index 1
+    //
+    if( i == 1 && color == 5 )
+    {
+        turnRight();
+        move(2*leg + 0.3046*scale);
+        dropToken();
+        rot180();
+        move(2*leg + 0.3046*scale);
+        turnRight();
 
-        }
-        if( i == 5 && color == 1 ) {
+    }
+    //
+    //   condition for return Magenta at index 2
+    //
+    if( i == 2 && color == 5 )
+    {
+        move(leg + 0.3046*scale, FORWARD);
+        turnRight();
+        move(leg, FORWARD);
+        dropToken();
+        rot180();
+        move(leg, FORWARD);
+        turnLeft();
+        move(2*leg + 0.3046*scalem FORWARD);
+        rot180();
 
-            rot180();
-            move(leg + 0.3046*scale, FORWARD);
-            turnLeft();
-            move(2*leg + 0.3046*scale, FORWARD);
-            dropToken();
-            rot180();
-            move(2*leg + 0.3046*scale, FORWARD);
-            turnRight();
-            move(leg + 0.3046*scale, FORWARD);
-        }
-        if( i == 6 && color == 1 ) { //condition for return red at index 5
-            turnRight();
-            move(2*leg + 0.3046*scale, FORWARD);
-            turnLeft();
-            move(2*leg + 0.3046*scale, FORWARD);
-            dropToken();
-            rot180();
-            move(2*leg + 0.3046*scale, FORWARD);
-            turnRight();
-            move(2*leg + 0.3046*scale, FORWARD);
-
-        }
-
-        /*******************************************************************///Green
-        if( i == 0 && color == 2 ) { //condition for return Green at index 0
-            move(leg, FORWARD);
-            turnLeft();
-            move(0.3046*scale);
-            dropToken();
-            rot180();
-            move(0.3046*scale);
-            turnRight();
-            move(leg, FORWARD);
-            rot180();
-
-        }
-        if( i == 1 && color == 2 ) { //condition for return green at index 1
-            turnLeft();
-            move(0.3046*scale);
-            dropToken();
-            rot180();
-            move(0.3046*scale);
-            turnLeft();
-
-        }
-        if( i == 2 && color == 2 ) { //condition for return green at index 2
-            turnRight();
-            move(leg, FORWARD);
-            turnRight();
-            move(0.3046*scale);
-            dropToken();
-            rot180();
-            move(0.3046*scale);
-            turnLeft();
-            move(leg, FORWARD);
-            turnRight();
-
-        }
-
-        if( i == 4 && color == 2 ) { //condition for return green at index 4
-            turnRight();
-            move(2*leg + 0.3046*scale, FORWARD);
-            turnLeft();
-            move(leg, FORWARD);
-            dropToken();
-            rot180();
-            move(leg, FORWARD);
-            turnRight();
-            move(2*leg + 0.3046*scale, FORWARD);
-            turnRight();
-
-
-
-        }
-        if( i == 5 && color == 2 ) { //condition for return green at index 5
-            turnRight();
-            move(2*leg + 0.3046*scale, FORWARD);
-            dropToken();
-            rot180();
-            move(2*leg + 0.3046*scale, FORWARD);
-            turnRight();
-
-        }
-        if( i == 6 && color == 2 ) { //condition for return green at index 6
-            move(2*leg + 0.3046*scale, FORWARD);
-            turnRight();
-            move(leg + 0.3046*scale, FORWARD);
-            dropToken();
-            rot180();
-            move(leg + 0.3046*scale, FORWARD);
-            turnLeft();
-            move(leg + 0.3046*scale, FORWARD);
-            rot180();
-        }
-        /*******************************************************************///Blue
-        if( i == 0 && color == 3 ) { //condition for return Blue at index 0 ::
-            rot180();
-            move(0.3048*scale, FORWARD);
-            turnRight();
-            move(0.3048*scale, FORWARD);
-            dropToken();
-            rot180();
-            move(0.3048*scale, FORWARD);
-            turnLeft();
-            move(0.3048*scale, FORWARD);
-
-        }
-        if( i == 1 && color == 3 ) { //condition for return blue at index 1
-            rot180();
-            move((leg + 0.3048*scale), FORWARD);
-            turnRight();
-            move(0.3048*scale, FORWARD);
-            dropToken();
-            rot180();
-            move(0.3048*scale, FORWARD);
-            turnLeft();
-            move((leg + 0.3048*scale), FORWARD);
-
-        }
-        if( i == 2 && color == 3 ) { //condition for return blue at index 2
-            turnRight();
-            move((2*leg + 0.3048*scale), FORWARD);
-            turnRight();
-            move(0.3048*scale, FORWARD);
-            dropToken();
-            rot180();
-            move(0.3048*scale, FORWARD);
-            turnLeft();
-            move((2*leg + 0.3048*scale), FORWARD);
-            turnRight();
-
-
-        }
-        if( i == 4 && color == 3 ) { //condition for return blue at index 4
-            turnRight();
-            move((2*leg + 0.3048*scale), FORWARD);
-            turnRight();
-            move((2*leg) + (0.3048*scale), FORWARD);
-            dropToken();
-            rot180();
-            move((2*leg + 0.3048*scale), FORWARD);
-            turnLeft();
-            move((2*leg) + (0.3048*scale), FORWARD);
-            turnRight();
-
-
-        }
-        if( i == 5 && color == 3 ) { //condition for return blue at index 5
-
-            move(leg + 0.3048*scale, FORWARD);
-            turnRight();
-            move(2*leg + 0.3048*scale, FORWARD);
-            dropToken();
-            rot180();
-            move(2*leg + 0.3048*scale, FORWARD);
-            turnLeft();
-            move(leg + 0.3048*scale, FORWARD);
-            rot180();
-
-
-
-
-        }
-        if( i == 6 && color == 3 ) { //condition for return blue at index 5
-            move(2*leg + 0.3048*scale, FORWARD);
-            turnLeft();
-            move(0.3048*scale, FORWARD);
-            dropToken();
-            rot180();
-            move(0.3048*scale, FORWARD);
-            turnRight();
-            move(2*leg + 0.3048*scale, FORWARD);
-            rot180();
-
-        }
-        /*******************************************************************///Cyan
-        if( i == 0 && color == 4 ) { //condition for return Cyan at index 0
-            move(2*leg + 0.3046*scale, FORWARD)
-            turnRight();
-            move(2*leg + 0.3046*scale, FORWARD)
-            dropToken();
-            rot180();
-            move(2*leg + 0.3046*scale, FORWARD)
-            turnLeft();
-            move(2*leg + 0.3046*scale, FORWARD)
-            rot180();
-        }
-        if( i == 1 && color == 4 ) { //condition for return Cyan at index 1
-            move(leg + 0.3046*scale, FOWARD);
-            turnRight();
-            move(2*leg + 0.3046*scale, FOWARD);
-            dropToken();
-            rot180();
-            move(2*leg + 0.3046*scale, FOWARD);
-            turnleft();
-            move(leg + 0.3046*scale, FOWARD);
-            rot180();
-
-        }
-        if( i == 2 && color == 4 ) { //condition for return Cyan at index 2
-            move(2*leg + 0.3046*scale, FOWARD);
-            turnLeft();
-            move(0.3046*scale);
-            dropToken();
-            rot180();
-            move(0.3046*scale);
-            turnRight();
-            move(2*leg + 0.3046*scale, FOWARD);
-            rot180();
-
-        }
-        if( i == 4 && color == 4 ) { //condition for return Cyan at index 4
-            rot180();
-            move(0.3046*scale, FORWARD);
-            turnRight();
-            move(0.3046*scale, FORWARD);
-            dropToken();
-            rot180();
-            move(0.3046*scale, FORWARD);
-            turnLeft();
-            move(0.3046*scale, FORWARD);
-            turnleft();
-            move(0.3046*scale, FORWARD);
-            turnRight();
-
-        }
-        if( i == 5 && color == 4 ) { //condition for return Cyan at index 5
-            rot180();
-            move(leg + 0.3046*scale, FORWARD);
-            turnRight();
-            move(0.3046*scale, FORWARD);
-            dropToken();
-            rot180();
-            move(0.3046*scale, FORWARD);
-            turnLeft();
-            move(leg + 0.3046*scale, FORWARD);
-
-        }
-        if( i == 6 && color == 4 ) { //condition for return Cyan at index 6
-            turnRight();
-            move(2*leg + 0.3046*scale, FORWARD);
-            turnRight();
-            move(0.3046*scale, FORWARD);
-            dropToken();
-            rot180();
-            move(0.3046*scale, FORWARD);
-            turnLeft();
-            move(leg + 0.3046*scale, FORWARD);
-            turnRight();
-
-        }
-        /*******************************************************************///Magenta
-        if( i == 0 && color == 5 ) { //condition for return Magenta at index 0
-            move(leg, FORWARD);
-            turnRight();
-            move(2*leg + 0.3046*scale);
-            dropToken();
-            rot180();
-            move(2*leg + 0.3046*scale);
-            turnLeft();
-            move(leg, FORWARD);
-            rot180();
-
-        }
-        if( i == 1 && color == 5 ) { //condition for return Magenta at index 1
-            turnRight();
-            move(2*leg + 0.3046*scale);
-            dropToken();
-            rot180();
-            move(2*leg + 0.3046*scale);
-            turnRight();
-
-        }
-        if( i == 2 && color == 5 ) { //condition for return Magenta at index 2
-            move(leg + 0.3046*scale, FORWARD);
-            turnRight();
-            move(leg, FORWARD);
-            dropToken();
-            rot180();
-            move(leg, FORWARD);
-            turnLeft();
-            move(2*leg + 0.3046*scalem FORWARD);
-            rot180();
-
-        }
-        if( i == 4 && color == 5 ) { //condition for return Magenta at index 4
-            move(leg, FORWARD);
-            turnLeft();
-            move(0.3046*scale);
-            dropToken();
-            rot180();
-            move(0.3046*scale);
-            turnRight();
-            Move(leg, FORWARD);
-            rot180();
-
-        }
-        if( i == 5 && color == 5 ) { //condition for return Magenta at index 5
-            turnLeft();
-            move(0.3046*scale);
-            dropToken();
-            rot180();
-            move(0.3046*scale);
-            turnLeft();
-
-        }
-        if( i == 6 && color == 5 ) { //condition for return Magenta at index 6
-            rot180();
-            move(leg, FORWARD);
-            turnRight();
-            move(0.3046*scale);
-            dropToken();
-            rot180();
-            move(0.3046*scale);
-            turnLeft();
-            move(lef, FORWARD);
-            turnRight();
-
-        }
-        /*******************************************************************///Yellow
-        if( i == 0 && color == 6 ) { //condition for return Yellow at index 0
-            turnRight();
-            move(2*leg + 0.3046*scale);
-            turnRight();
-            move(0.3046*scale);
-            dropToken();
-            rot180();
-            move(0.3046*scale);
-            turnLeft();
-            move(2*leg + 0.3046*scale);
-            turnRight();
-
-        }
-        if( i == 1 && color == 6 ) { //condition for return Yellow at index 1
-            rot180();
-            move(leg + 0.3046*scale, FORWARD);
-            turnLeft();
-            move(2*leg, FORWARD);
-            dropToken();
-            rot180();
-            move(2*leg, FOWARD);
-            turnRight();
-            move(leg + 0.3046*scale, FORWARD);
-
-
-        }
-        if( i == 2 && color == 6 ) { //condition for return Yellow at index 2
-            move(2*leg + 0.3046*scale, FORWARD);
-            turnRight();
-            move(2*leg, FORWARD);
-            dropToken();
-            rot180();
-            move(2*leg, FORWARD);
-            turnLeft();
-            move(2*leg + 0.3046*scale, FORWARD);
-            rot180();
-
-        }
-        if( i == 4 && color == 6 ) { //condition for return Yellow at index 4
-            move(2*leg + 0.3046*scale, FORWARD);
-            turnLeft();
-            move(0.3046*scale, FORWARD);
-            dropToken();
-            rot180(0);
-            move(0.3046*scale, FORWARD);
-            turnRight();
-            move(2*leg + 0.3046*scale, FORWARD);
-            rot180();
-
-
-        }
-        if( i == 5 && color == 6 ) { //condition for return Yellow at index 5
-            move(leg + 0.3046*scale, FORWARD);
-            turnLeft();
-            move(0.3046*scale, FORWARD);
-            dropToken();
-            rot180();
-            move(0.3046*scale, FORWARD);
-            turnRight();
-            move(Leg + 0.3046*scale, FORWARD);
-            rot180();
-
-
-        }
-        if( i == 6 && color == 6 ) { //condition for return Yellow at index 6
-            rot180();
-            move(0.3046*scale, FORWARD);
-            turnRight();
-            move(0.3046*scale, FORWARD);
-            dropToken();
-            rot180();
-            move(0.3046*scale, FORWARD);
-            turnLeft();
-            move(0.3046*scale, FORWARD);
-
-        }
-        /*******************************************************************///Gray
-        if( i == 0 && color == 7 ) { //condition for return Gray at index 0
-            move(leg, FORWARD);
-            turnRight();
-            move(leg, FORWARD);
-            dropToken();
-            rot180();
-            move(leg, FORWARD);
-            turnLeft();
-            move(leg, FORWARD);
-
-
-        }
-        if( i == 1 && color == 7 ) { //condition for return Gray at index 1
-            turnRight();
-            move(leg, FORWARD);
-            dropToken();
-            rot180();
-            move(leg, FORWARD);
-            turnRight();
-        }
-        if( i == 2 && color == 7 ) { //condition for return Gray at index 2
-            rot180();
-            move(leg, FORWARD);
-            turnLeft();
-            move(leg, FORWARD);
-            dropToken();
-            rot180();
-            move(leg, FORWARD);
-            turnRight();
-            move(leg, FORWARD);
-            turnRight();
-
-        }
-        if( i == 4 && color == 7 ) { //condition for return Gray at index 4
-            move(leg, FORWARD);
-            turnRight();
-            move(leg, FORWARD);
-            dropToken();
-            rot180();
-            move(leg, FORARD);
-            turnLeft();
-            move(lef, FORWARD);
-            rot180();
-
-        }
-        if( i == 5 && color == 7 ) { //condition for return Gray at index 5
-            turnRight();
-            move(leg, FORWARD);
-            dropToken();
-            rot180();
-            move(leg, FORWARD);
-            turnRight();
-
-        }
-        if( i == 6 && color == 7 ) { //condition for return Gray at index 6
-            turnRight();
-            move(leg, FORWARD);
-            turnLeft();
-            move(leg, FORWARD);
-            dropToken();
-            rot180();
-            move(leg, FORWARD);
-            rightRight();
-            move(leg, FORWARD);
-            turnRight();
-
-        } else
-            {}
-        /*******************************************************************/
+    }
+    //
+    //   condition for return Magenta at index 4
+    //
+    if( i == 4 && color == 5 )
+    {
+        move(leg, FORWARD);
+        turnLeft();
+        move(0.3046*scale);
+        dropToken();
+        rot180();
+        move(0.3046*scale);
+        turnRight();
+        Move(leg, FORWARD);
+        rot180();
+    }
+    //
+    //   condition for return Magenta at index 5
+    //
+    if( i == 5 && color == 5 )
+    {
+        turnLeft();
+        move(0.3046*scale);
+        dropToken();
+        rot180();
+        move(0.3046*scale);
+        turnLeft();
+    }
+    //
+    //   condition for return Magenta at index 6
+    //
+    if( i == 6 && color == 5 )
+    {
+        rot180();
+        move(leg, FORWARD);
+        turnRight();
+        move(0.3046*scale);
+        dropToken();
+        rot180();
+        move(0.3046*scale);
+        turnLeft();
+        move(lef, FORWARD);
+        turnRight();
+    }
+    //
+    //
+    //   YELLOW
+    //
+    //
+    //   condition for return yellow at index 0
+    //
+    if( i == 0 && color == 6 )
+    {
+        turnRight();
+        move(2*leg + 0.3046*scale);
+        turnRight();
+        move(0.3046*scale);
+        dropToken();
+        rot180();
+        move(0.3046*scale);
+        turnLeft();
+        move(2*leg + 0.3046*scale);
+        turnRight();
+    }
+    //
+    //   condition for return Yellow at index 1
+    //
+    if( i == 1 && color == 6 )
+    {
+        rot180();
+        move(leg + 0.3046*scale, FORWARD);
+        turnLeft();
+        move(2*leg, FORWARD);
+        dropToken();
+        rot180();
+        move(2*leg, FOWARD);
+        turnRight();
+        move(leg + 0.3046*scale, FORWARD);
+    }
+    //
+    //   condition for return Yellow at index 2
+    //
+    if( i == 2 && color == 6 )
+    {
+        move(2*leg + 0.3046*scale, FORWARD);
+        turnRight();
+        move(2*leg, FORWARD);
+        dropToken();
+        rot180();
+        move(2*leg, FORWARD);
+        turnLeft();
+        move(2*leg + 0.3046*scale, FORWARD);
+        rot180();
+    }
+    //
+    //   condition for return Yellow at index 4
+    //
+    if( i == 4 && color == 6 )
+    {
+        move(2*leg + 0.3046*scale, FORWARD);
+        turnLeft();
+        move(0.3046*scale, FORWARD);
+        dropToken();
+        rot180(0);
+        move(0.3046*scale, FORWARD);
+        turnRight();
+        move(2*leg + 0.3046*scale, FORWARD);
+        rot180();
+    }
+    //
+    //   condition for return Yellow at index 5
+    //
+    if( i == 5 && color == 6 )
+    {
+        move(leg + 0.3046*scale, FORWARD);
+        turnLeft();
+        move(0.3046*scale, FORWARD);
+        dropToken();
+        rot180();
+        move(0.3046*scale, FORWARD);
+        turnRight();
+        move(Leg + 0.3046*scale, FORWARD);
+        rot180();
+    }
+    //
+    //   condition for return Yellow at index 6
+    //
+    if( i == 6 && color == 6 )
+    {
+        rot180();
+        move(0.3046*scale, FORWARD);
+        turnRight();
+        move(0.3046*scale, FORWARD);
+        dropToken();
+        rot180();
+        move(0.3046*scale, FORWARD);
+        turnLeft();
+        move(0.3046*scale, FORWARD);
+    }
+    //
+    //
+    //   GRAY
+    //
+    //
+    //   condition for return gray at index 0
+    //
+    if( i == 0 && color == 7 )
+    {
+        move(leg, FORWARD);
+        turnRight();
+        move(leg, FORWARD);
+        dropToken();
+        rot180();
+        move(leg, FORWARD);
+        turnLeft();
+        move(leg, FORWARD);
+    }
+    //
+    //   condition for return Gray at index 1
+    //
+    if( i == 1 && color == 7 )
+    {
+        turnRight();
+        move(leg, FORWARD);
+        dropToken();
+        rot180();
+        move(leg, FORWARD);
+        turnRight();
+    }
+    //
+    //   condition for return Gray at index 2
+    //
+    if( i == 2 && color == 7 )
+    {
+        rot180();
+        move(leg, FORWARD);
+        turnLeft();
+        move(leg, FORWARD);
+        dropToken();
+        rot180();
+        move(leg, FORWARD);
+        turnRight();
+        move(leg, FORWARD);
+        turnRight();
+    }
+    //
+    //   condition for return Gray at index 4
+    //
+    if( i == 4 && color == 7 )
+    {
+        move(leg, FORWARD);
+        turnRight();
+        move(leg, FORWARD);
+        dropToken();
+        rot180();
+        move(leg, FORARD);
+        turnLeft();
+        move(lef, FORWARD);
+        rot180();
+    }
+    //
+    //   condition for return Gray at index 5
+    //
+    if( i == 5 && color == 7 )
+    {
+        turnRight();
+        move(leg, FORWARD);
+        dropToken();
+        rot180();
+        move(leg, FORWARD);
+        turnRight();
+    }
+    //
+    //   condition for return Gray at index 6
+    //
+    if( i == 6 && color == 7 )
+    {
+        turnRight();
+        move(leg, FORWARD);
+        turnLeft();
+        move(leg, FORWARD);
+        dropToken();
+        rot180();
+        move(leg, FORWARD);
+        rightRight();
+        move(leg, FORWARD);
+        turnRight();
+    }
+    //
+    //  ??
+    //
+    else
+    {
 
     }
 }
-void returnHome(){ //Returns to the home white square
-
+//
+//
+//   Return Home Function
+//   Returns to the home white square
+//
+void returnHome()
+{
 
 }
