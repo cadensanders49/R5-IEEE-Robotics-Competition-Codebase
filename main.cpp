@@ -39,14 +39,12 @@ void returnHome();                                            //Returns to the h
 //    GLOBAL VARIABLES
 //
 //
-const int FORWARD = 0;
-const int BACKWARD = 1;
+const int FORWARD = 0;                //Sets a constant for choosing the forward direction
+const int BACKWARD = 1;               //Sets a constant for choosing the forward direction
 const float stepSize = 0.001212;      //In meters
 const float FREQUENCY = 500;          //Steps per second
-int sensor_addr = 41 << 1;
-float leg;
-float scale;
-int color;
+int sensor_addr = 41 << 1;            //Calibration for the rgb sensor
+const float leg = 0.762;              //Defines the 'leg' distance, 2.5 feet in meters
 int TIME = 100;                       //In seconds, this is where you input the round time duration
 Timeout timer;                        //Attach this to return home function, set according to round time
 //
@@ -58,28 +56,44 @@ int main()
 {
     //
     //
-    //Start a timer
+    //   Start a timer
+    //
     //
     timer.attach(&returnHome, TIME);
     //
     //
-    //Define premeasured distances
+    //   Define premeasured distances
+    //
     //
     float radDistance = 0.5;
     float posDistance = 0.5;
     float armDistance = 0.5;
     //
     //
-    enableH = 0; //Making sure the H-Bridge starts low and off
-    highH = 0; //This starts high for the H-Bridge
-    highL = 1; //This starts low for the H-Bridge
+    //   Initialize some other variable
+    //
+    //
+    enableH = 0;          //Making sure the H-Bridge starts low and off
+    highH = 0;            //This starts high for the H-Bridge
+    highL = 1;            //This starts low for the H-Bridge
+    float scale;          //A variable to scale the box size 
+    int color;            //A variable to hold the color value
+    //
+    //
     //The start button
-    while(true) {
+    //
+    //
+    while(true)
+    {
         if (Start == 0)
             break;
     }
     //
-    killAll.rise(&kill); //The kill interupt
+    //
+    //   The kill interupt
+    //
+    //
+    killAll.rise(&kill);
     //
     //
     //   RGB Sensor Settings
@@ -92,11 +106,14 @@ int main()
     char data[1] = {0};
     i2c.write(sensor_addr,id_regval,1, true);
     i2c.read(sensor_addr,data,1,false);
-    if (data[0]==68) {
+    if (data[0]==68)
+    {
         green = 0;
         wait (2);
         green = 1;
-    } else {
+    }
+    else
+    {
         green = 1;
     }
     //
@@ -121,21 +138,30 @@ int main()
     move(0.762, FORWARD);
     //
     //
-    //   Begin mapping algorithm
+    //   Mapping algorithm
     //
     //
     while(true) {
-        for(int i = 0; i <=7; i++) { //begin motion around Nth perimeter   ::No token on one length of the track so we may want to revise this
-            leg = 0.762; //2.5 feet in meters
+        //
+        //
+        //   Begin motion around Nth perimeter
+        //   No token on one length of the track so we may want to revise this
+        //
+        for(int i = 0; i <=7; i++)
+        {
             scale = 1;
-            if(i % 2 == 0) {
+            if(i % 2 == 0)
+            {
                 turnRight();
             }
             grabToken();
             color = findColor();
-            if (color == 9) {
+            if (color == 9)
+            {
                 return(0);
-            } else {
+            }
+            else
+            {
                 findPathReturn(color, i, scale, leg);
                 dropToken();
                 //returnPrevious();
@@ -569,7 +595,7 @@ void findPathReturn(int color, int i, float scale, float leg)
     //   GREEN
     //
     //
-    //   condition for return red at index 0
+    //   condition for return green at index 0
     //
     if( i == 0 && color == 2 )
     {
@@ -659,7 +685,7 @@ void findPathReturn(int color, int i, float scale, float leg)
     //   BLUE
     //
     //
-    //   condition for return red at index 0
+    //   condition for return blue at index 0
     //
     if( i == 0 && color == 3 )
     {
@@ -755,7 +781,7 @@ void findPathReturn(int color, int i, float scale, float leg)
     //   CYAN
     //
     //
-    //   condition for return red at index 0
+    //   condition for return cyan at index 0
     //
     if( i == 0 && color == 4 )
     {
@@ -858,7 +884,7 @@ void findPathReturn(int color, int i, float scale, float leg)
     //   MAGENTA
     //
     //
-    //   condition for return red at index 0
+    //   condition for return magenta at index 0
     //
     if( i == 0 && color == 5 )
     {
