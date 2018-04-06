@@ -133,9 +133,12 @@ int main()
     //  Initialize the robot position
     //
     //
-    move((0.6096-radDistance+posDistance+armDistance),FORWARD);
+    move((0.5-radDistance+posDistance+armDistance),FORWARD);
+    wait(1);
     turnLeft();
+    wait(1);
     move(radDistance,BACKWARD);
+    wait(1);
     move(2.5, FORWARD);
     //
     //
@@ -157,6 +160,14 @@ int main()
           {
             if (j == 4 || j ==2)
             {
+              turnRight();
+              wait(0.5);
+              move(0.5,FORWARD);
+              turnRight();
+              wait(0.5);
+              move(0.5,FORWARD);
+              wait(1);
+              turnLeft();
               continue;
             }
           }
@@ -167,6 +178,14 @@ int main()
           {
             if (j == 4)
             {
+              turnRight();
+              wait(0.5);
+              move(0.5,FORWARD);
+              turnRight();
+              wait(0.5);
+              move(0.5,FORWARD);
+              wait(1);
+              turnLeft();
               continue;
             }
           }
@@ -177,6 +196,14 @@ int main()
           {
             if (j == 4)
             {
+              turnRight();
+              wait(0.5);
+              move(0.5,FORWARD);
+              turnRight();
+              wait(0.5);
+              move(0.5,FORWARD);
+              wait(1);
+              turnLeft();
               continue;
             }
           }
@@ -201,10 +228,19 @@ int main()
                 else
                 {
                     findPathReturn(color, i, scale, leg);
+                    move(leg, FORWARD);
                 }
               }
-              move(leg, FORWARD);
+
           }
+          turnRight();
+          wait(0.5);
+          move(0.5,FORWARD);
+          turnRight();
+          wait(0.5);
+          move(0.5,FORWARD);
+          wait(1);
+          turnLeft();
         }
     }
 }
