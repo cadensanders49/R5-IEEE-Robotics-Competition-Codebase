@@ -42,7 +42,7 @@ void returnHome();                                            //Returns to the h
 //
 const int FORWARD = 0;                //Sets a constant for choosing the forward direction
 const int BACKWARD = 1;               //Sets a constant for choosing the forward direction
-const float stepSize = 0.001212;      //In meters
+const float stepSize = 0.00397638;    //In feet
 const float FREQUENCY = 500;          //Steps per second
 int sensor_addr = 41 << 1;            //Calibration for the rgb sensor
 const float leg = 0.762;              //Defines the 'leg' distance, 2.5 feet in meters
@@ -317,7 +317,7 @@ void turnRight(float dist, bool direction)
     //   Wait the amount of time needed for one turn
     //
     //
-    wait(4*(0.35343/stepSize)*(1/FREQUENCY)); //(dist/stepSize) is the number of steps; 1/FREQUENCY is the time per step
+    wait(4*(1.159547244/stepSize)*(1/FREQUENCY)); //(dist/stepSize) is the number of steps; 1/FREQUENCY is the time per step
     //
     //
     //   Stop motor
@@ -351,7 +351,7 @@ void turnLeft(float dist, bool direction)
     //   Wait the amount of time needed for one turn
     //
     //
-    wait(4*(0.35343/stepSize)*(1/FREQUENCY)); //(dist/stepSize) is the number of steps; 1/FREQUENCY is the time per step
+    wait(4*(1.159547244/stepSize)*(1/FREQUENCY)); //(dist/stepSize) is the number of steps; 1/FREQUENCY is the time per step
     //
     //
     //   Stop motor
@@ -385,7 +385,7 @@ void rot180()
     //   Wait the amount of time needed for one turn
     //
     //
-    wait(2*4*(0.35343/stepSize)*(1/FREQUENCY)); //(dist/stepSize) is the number of steps; 1/FREQUENCY is the time per step
+    wait(2*4*(1.159547244/stepSize)*(1/FREQUENCY)); //(dist/stepSize) is the number of steps; 1/FREQUENCY is the time per step
     //
     //
     //   Stop motor
