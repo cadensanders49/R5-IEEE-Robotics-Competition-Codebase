@@ -42,7 +42,7 @@ void returnHome();                                            //Returns to the h
 //
 const int FORWARD = 0;                //Sets a constant for choosing the forward direction
 const int BACKWARD = 1;               //Sets a constant for choosing the forward direction
-const float stepSize = 0.00397638;    //In feet
+const float stepSize = 0.004090615436;    //In feet
 const float FREQUENCY = 500;          //Steps per second
 int sensor_addr = 41 << 1;            //Calibration for the rgb sensor
 int TIME = 100;                       //In seconds, this is where you input the round time duration
@@ -65,8 +65,8 @@ int main()
     //   Define premeasured distances
     //
     //
-    float radDistance = 0.5;
-    float posDistance = 0.0833333;
+    float radDistance = 0.54166666;
+    float posDistance = 0.125;
     float armDistance = 0.2083333;
     //
     //
@@ -134,7 +134,7 @@ int main()
     //  Initialize the robot position
     //
     //
-    move((0.5-radDistance+posDistance+armDistance),FORWARD);
+    move(0.16666666,FORWARD);
     wait(2.5);
     //
     //
@@ -160,9 +160,9 @@ int main()
               wait(2.5);
               turnLeft();
               wait(2.5);
-              move(radDistance,BACKWARD);
+              move(0.25,BACKWARD);
               wait(2.5);
-              move(leg-0.5, FORWARD);
+              move(leg-0.9166666, FORWARD);
               wait(2.5);
               continue;
             }
@@ -176,8 +176,8 @@ int main()
             {
               move(0.5, FORWARD);
               turnLeft();
-              move(radDistance,BACKWARD);
-              move(leg-0.5, FORWARD);
+              move(armDistance,BACKWARD);
+              move(leg-0.9166666, FORWARD);
               continue;
             }
           }
@@ -187,7 +187,7 @@ int main()
           else if(round == 3)
           {
               turnLeft();
-              move(radDistance,BACKWARD);
+              move(armDistance,BACKWARD);
               move(leg, FORWARD);
           }
           //
@@ -291,7 +291,7 @@ void grabToken()
     magDirection = 1;
     magArm.period(0.002);
     magArm.write(0.5);
-    wait(0.65);
+    wait(0.63);
     //
     //
     //   Stop moving the arm
@@ -364,7 +364,7 @@ void turnRight()
     //   Wait the amount of time needed for one turn
     //
     //
-    wait(4*(1.159547244/stepSize)*(1/FREQUENCY)); //(dist/stepSize) is the number of steps; 1/FREQUENCY is the time per step
+    wait(4*(1.17/stepSize)*(1/FREQUENCY)); //(dist/stepSize) is the number of steps; 1/FREQUENCY is the time per step
     //
     //
     //   Stop motor
