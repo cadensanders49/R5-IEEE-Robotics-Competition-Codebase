@@ -133,10 +133,7 @@ int main()
     //  Initialize the robot position
     //
     //
-    move((0.6096-radDistance+posDistance+armDistance),FORWARD);
-    turnLeft();
-    move(radDistance,BACKWARD);
-    move(2.5, FORWARD);
+    move((0.5-radDistance+posDistance+armDistance),FORWARD);
     //
     //
     //   Mapping algorithm
@@ -157,6 +154,10 @@ int main()
           {
             if (j == 4 || j ==2)
             {
+              move(0.5, FORWARD);
+              turnLeft();
+              move(radDistance,BACKWARD);
+              move(leg, FORWARD);
               continue;
             }
           }
@@ -167,6 +168,10 @@ int main()
           {
             if (j == 4)
             {
+              move(0.5, FORWARD);
+              turnLeft();
+              move(radDistance,BACKWARD);
+              move(leg, FORWARD);
               continue;
             }
           }
@@ -175,10 +180,9 @@ int main()
           //
           else if(round == 3)
           {
-            if (j == 4)
-            {
-              continue;
-            }
+              turnLeft();
+              move(radDistance,BACKWARD);
+              move(leg, FORWARD);
           }
           //
           //   Token Drop Off Algorithm
