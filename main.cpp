@@ -65,8 +65,8 @@ int main()
     //
     //
     float radDistance = 0.5;
-    float posDistance = 0.5;
-    float armDistance = 0.5;
+    float posDistance = 0.0833333;
+    float armDistance = 0.2083333;
     //
     //
     //   Initialize some other variable
