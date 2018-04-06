@@ -136,7 +136,7 @@ int main()
     move((0.6096-radDistance+posDistance+armDistance),FORWARD);
     turnLeft();
     move(radDistance,BACKWARD);
-    move(0.762, FORWARD);
+    move(2.5, FORWARD);
     //
     //
     //   Mapping algorithm
@@ -188,17 +188,19 @@ int main()
               {
                   turnRight();
               }
-              grabToken();
-              color = findColor();
-              if (color == 9)
+              if(i != 3 && i != 7)
               {
+                grabToken();
+                color = findColor();
+                if (color == 9)
+                {
+                  move(leg, FORWARD);
                   continue;
-              }
-              else
-              {
-                  findPathReturn(color, i, scale, leg);
-                  dropToken();
-                  //returnPrevious();
+                }
+                else
+                {
+                    findPathReturn(color, i, scale, leg);
+                }
               }
               move(leg, FORWARD);
           }
