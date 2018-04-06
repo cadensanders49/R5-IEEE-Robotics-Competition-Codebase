@@ -211,10 +211,19 @@ int main()
                 else
                 {
                     findPathReturn(color, i, scale, leg);
+                    move(leg, FORWARD);
                 }
               }
-              move(leg, FORWARD);
+
           }
+          turnRight();
+          wait(0.5);
+          move(0.5,FORWARD);
+          turnRight();
+          wait(0.5);
+          move(0.5,FORWARD);
+          wait(1);
+          turnLeft();
         }
     }
 }
