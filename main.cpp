@@ -595,7 +595,7 @@ void findPathReturn(int color, int i, float scale, float leg)
         rot180();
         move(scale, FORWARD);
         turnLeft();
-        move(2*leg + scale, FOWARD);
+        move(2*leg + scale, FORWARD);
         turnRight();
     }
     //
@@ -667,7 +667,7 @@ void findPathReturn(int color, int i, float scale, float leg)
         turnRight();
         move(leg, FORWARD);
         turnRight();
-        move(scale, FOWARD);
+        move(scale, FORWARD);
         dropToken();
         rot180();
         move(scale, FORWARD);
@@ -856,7 +856,7 @@ void findPathReturn(int color, int i, float scale, float leg)
     {
         move(2*leg + scale, FORWARD);
         turnLeft();
-        move(scale);
+        move(scale, FORWARD);
         dropToken();
         rot180();
         move(scale, FORWARD);
@@ -1005,7 +1005,7 @@ void findPathReturn(int color, int i, float scale, float leg)
         rot180();
         move(scale, FORWARD);
         turnLeft();
-        move(left, FORWARD);
+        move(leg, FORWARD);
         turnRight();
     }
     //
@@ -1018,14 +1018,14 @@ void findPathReturn(int color, int i, float scale, float leg)
     if( i == 0 && color == 6 )
     {
         turnRight();
-        move(2*leg + scale);
+        move(2*leg + scale, FORWARD);
         turnRight();
         move(scale, FORWARD);
         dropToken();
         rot180();
-        move(scale);
+        move(scale, FORWARD);
         turnLeft();
-        move(2*leg + scale);
+        move(2*leg + scale, FORWARD);
         turnRight();
     }
     //
@@ -1039,7 +1039,7 @@ void findPathReturn(int color, int i, float scale, float leg)
         move(2*leg, FORWARD);
         dropToken();
         rot180();
-        move(2*leg, FOWARD);
+        move(2*leg, FORWARD);
         turnRight();
         move(leg + scale, FORWARD);
     }
@@ -1067,7 +1067,7 @@ void findPathReturn(int color, int i, float scale, float leg)
         turnLeft();
         move(scale, FORWARD);
         dropToken();
-        rot180(0);
+        rot180();
         move(scale, FORWARD);
         turnRight();
         move(2*leg + scale, FORWARD);
@@ -1085,7 +1085,7 @@ void findPathReturn(int color, int i, float scale, float leg)
         rot180();
         move(scale, FORWARD);
         turnRight();
-        move(Leg + scale, FORWARD);
+        move(leg + scale, FORWARD);
         rot180();
     }
     //
@@ -1159,9 +1159,9 @@ void findPathReturn(int color, int i, float scale, float leg)
         move(leg, FORWARD);
         dropToken();
         rot180();
-        move(leg, FORARD);
+        move(leg, FORWARD);
         turnLeft();
-        move(lef, FORWARD);
+        move(leg, FORWARD);
         rot180();
     }
     //
@@ -1188,7 +1188,7 @@ void findPathReturn(int color, int i, float scale, float leg)
         dropToken();
         rot180();
         move(leg, FORWARD);
-        rightRight();
+        turnRight();
         move(leg, FORWARD);
         turnRight();
     }
