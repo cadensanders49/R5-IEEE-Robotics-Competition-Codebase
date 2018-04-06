@@ -1,7 +1,6 @@
 #include "mbed.h"
 //
 //
-BO is in here 
 //   PIN DECLARATIONS
 //
 //
@@ -45,7 +44,7 @@ const int BACKWARD = 1;               //Sets a constant for choosing the forward
 const float stepSize = 0.00397638;    //In feet
 const float FREQUENCY = 500;          //Steps per second
 int sensor_addr = 41 << 1;            //Calibration for the rgb sensor
-const float leg = 0.762;              //Defines the 'leg' distance, 2.5 feet in meters
+const float leg = 1;              //Defines the 'leg' distance, 2.5 feet in meters
 int TIME = 100;                       //In seconds, this is where you input the round time duration
 Timeout timer;                        //Attach this to return home function, set according to round time
 //
@@ -79,6 +78,7 @@ int main()
     highL = 1;            //This starts low for the H-Bridge
     float scale;          //A variable to scale the box size
     int color;            //A variable to hold the color value
+    int round = 1;        //Round number
     //
     //
     //The start button
@@ -144,30 +144,64 @@ int main()
     //
     while(true) {
         //
+        //   Chooses which boxes to search for each round
         //
-        //   Begin motion around Nth perimeter
-        //   No token on one length of the track so we may want to revise this
-        //
-        for(int i = 0; i <=7; i++)
+        for(int j = 4; j>0; i--)
         {
-            scale = 1;
-            if(i % 2 == 0)
+          scale = (j/2)+0.5;
+          //
+          //   Round 1 Box Choices
+          //
+          if(round == 1)
+          {
+            if (j == 4 || j ==2)
             {
-                turnRight();
+              continue;
             }
-            grabToken();
-            color = findColor();
-            if (color == 9)
+          }
+          //
+          //   Round 2 Choices
+          //
+          else if(round == 2)
+          {
+            if (j == 4)
             {
-                return(0);
+              continue;
             }
-            else
+          }
+          //
+          //   Round 3 & Tiebreaker Choices
+          //
+          else if(round == 2)
+          {
+            if (j == 4)
             {
-                findPathReturn(color, i, scale, leg);
-                dropToken();
-                //returnPrevious();
+              continue;
             }
-            move(leg, FORWARD);
+          }
+          //
+          //   Token Drop Off Algorithm
+          //
+          for(int i = 0; i <=7; i++)
+          {
+              if(i % 2 == 0)
+              {
+                  turnRight();
+              }
+              grabToken();
+              color = findColor();
+              if (color == 9)
+              {
+                  continue;
+              }
+              else
+              {
+                  findPathReturn(color, i, scale, leg);
+                  dropToken();
+                  //returnPrevious();
+              }
+              move(leg, FORWARD);
+          }
         }
     }
 }
@@ -179,7 +213,7 @@ int main()
 //
 //
 //   Move Function
-//   Moves the robot (meters)
+//   Moves the robot (feet)
 //
 void move(float dist, bool direction)
 {
