@@ -1,5 +1,6 @@
 #include "mbed.h"
-// Bad Caden
+// cout << "Bad Caden!" << endl;
+//  cin >> response;
 //
 //   PIN DECLARATIONS
 //
@@ -41,7 +42,7 @@ void returnHome();                                            //Returns to the h
 //
 const int FORWARD = 0;                //Sets a constant for choosing the forward direction
 const int BACKWARD = 1;               //Sets a constant for choosing the forward direction
-const float stepSize = 0.00397638;    //In feet
+const float stepSize = 0.004090615436;    //In feet
 const float FREQUENCY = 500;          //Steps per second
 int sensor_addr = 41 << 1;            //Calibration for the rgb sensor
 int TIME = 100;                       //In seconds, this is where you input the round time duration
@@ -64,8 +65,8 @@ int main()
     //   Define premeasured distances
     //
     //
-    float radDistance = 0.5;
-    float posDistance = 0.0833333;
+    float radDistance = 0.54166666;
+    float posDistance = 0.125;
     float armDistance = 0.2083333;
     //
     //
@@ -133,13 +134,8 @@ int main()
     //  Initialize the robot position
     //
     //
-    move((0.5-radDistance+posDistance+armDistance),FORWARD);
-    wait(1);
-    turnLeft();
-    wait(1);
-    move(radDistance,BACKWARD);
-    wait(1);
-    move(2.5, FORWARD);
+    move(0.16666666,FORWARD);
+    wait(2.5);
     //
     //
     //   Mapping algorithm
@@ -160,14 +156,14 @@ int main()
           {
             if (j == 4 || j ==2)
             {
-              turnRight();
-              wait(0.5);
-              move(0.5,FORWARD);
-              turnRight();
-              wait(0.5);
-              move(0.5,FORWARD);
-              wait(1);
+              move(0.5, FORWARD);
+              wait(2.5);
               turnLeft();
+              wait(2.5);
+              move(0.25,BACKWARD);
+              wait(2.5);
+              move(leg-0.9166666, FORWARD);
+              wait(2.5);
               continue;
             }
           }
@@ -178,14 +174,10 @@ int main()
           {
             if (j == 4)
             {
-              turnRight();
-              wait(0.5);
-              move(0.5,FORWARD);
-              turnRight();
-              wait(0.5);
-              move(0.5,FORWARD);
-              wait(1);
+              move(0.5, FORWARD);
               turnLeft();
+              move(armDistance,BACKWARD);
+              move(leg-0.9166666, FORWARD);
               continue;
             }
           }
@@ -194,18 +186,9 @@ int main()
           //
           else if(round == 3)
           {
-            if (j == 4)
-            {
-              turnRight();
-              wait(0.5);
-              move(0.5,FORWARD);
-              turnRight();
-              wait(0.5);
-              move(0.5,FORWARD);
-              wait(1);
               turnLeft();
-              continue;
-            }
+              move(armDistance,BACKWARD);
+              move(leg, FORWARD);
           }
           //
           //   Token Drop Off Algorithm
@@ -317,7 +300,7 @@ void grabToken()
     magDirection = 1;
     magArm.period(0.002);
     magArm.write(0.5);
-    wait(0.65);
+    wait(0.63);
     //
     //
     //   Stop moving the arm
@@ -390,7 +373,7 @@ void turnRight()
     //   Wait the amount of time needed for one turn
     //
     //
-    wait(4*(1.159547244/stepSize)*(1/FREQUENCY)); //(dist/stepSize) is the number of steps; 1/FREQUENCY is the time per step
+    wait(4*(1.17/stepSize)*(1/FREQUENCY)); //(dist/stepSize) is the number of steps; 1/FREQUENCY is the time per step
     //
     //
     //   Stop motor
@@ -1243,5 +1226,64 @@ void findPathReturn(int color, int i, float scale, float leg)
 //
 void returnHome()
 {
-
+// Caden is booty
 }
+
+
+
+/*
+
+cout<<" /dNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNm+"<<endl;
+cout<<"mMs::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::sMN"<<endl;
+cout<<"mM+                                                                                              +MM"<<endl;
+cout<<"mM+                                                                                              +MM"<<endl;
+cout<<"mM+                                                                                              +MM"<<endl;
+cout<<"mM+                                                                                              +MM"<<endl;
+cout<<"mM+                                     -s-                                                      +MM"<<endl;
+cout<<"mM+                                     /NN:                                                     +MM"<<endl;
+cout<<"mM+                                      -yN+                                                    +MM"<<endl;
+cout<<"mM+                                       `+Mo                                                   +MM"<<endl;
+cout<<"mM+                                      `/yy-                                                   +MM"<<endl;
+cout<<"mM+                             `..`   `+yo.                                                     +MM"<<endl;
+cout<<"mM+                          `/ydmmmd:`o+.                                    ``..--             +MM"<<endl;
+cout<<"mM+                         -dMMMMMMy/ymmdy:                      ``..-:/+osyhdmmmds             +MM"<<endl;
+cout<<"mM+                    `:oo`mMMMMMMs/NMMMMMN/         ```.--:/osyhhhhhhyyyhdNmds/-.-+`           +MM"<<endl;
+cout<<"mM+                  `+dNs`:MMMMMMMNNMMMMMMMm `-:/+ssyhhhhhyyo+/:--..-/shdho:..-ohmMN`           +MM"<<endl;
+cout<<"mM+                  yMMs  /MMMMMMMMMMMMMMMMm :dNmyo+:-.``      `-+yhdy+-..-ohmMMMMMN`           +MM"<<endl;
+cout<<"mM+                ``oMMs  `mMMMMMMMMMMMMMMMs   :NMNm:     `.:oydds/-``:ohmMMMMMMMMMN`           +MM"<<endl;
+cout<<"mM+           -+syyhh-+NN.  -dNMMMMMMMMMMNm+   `+NNm+` `./shdho:.``:ohmMMMMMMMMMMMMMN`           +MM"<<endl;
+cout<<"mM+           yMN+-..  -hs  +y/ohdmNNmdy+:`  `odms:.-+yhdy+:```:ohNMMMMMMMMMMMMMMMNdo            +MM"<<endl;
+cout<<"mM+           yMdms-`    .  `ym+.``.-:/      :+::oydds/-` `:ohNMMMMMMMMMMMMMMMNds:.              +MM"<<endl;
+cout<<"mM+           yM.-smds/-``    +mNmdmds-   `./shmho:.  `:ohNMMMMMMMMMMMMMMMNdo:.   `-/`           +MM"<<endl;
+cout<<"mM+           yM.   -+sdmdhsso++yhy+////+ydmy+-`  `:odNMMMMMMMMMMMMMMMNdo:`   `-+ymMN`           +MM"<<endl;
+cout<<"mM+           yM.        .-:/+ossssysssss/.   `:sdNMMMMMMMMMMMMMMMNdo:`   `-ohNMMMMMN`           +MM"<<endl;
+cout<<"mM+           yM.                         `:sdNMMMMMMMMMMMMMMMNdo:`   `-ohNMMMMMMMMMN`           +MM"<<endl;
+cout<<"mM+           yM.                        yMMMMMMMMMMMMMMMMNho-`   `-ohNMMMMMMMMMMMMMN`           +MM"<<endl;
+cout<<"mM+           yM.                       `mMMMMMMMMMMMMNho-`   `-ohNMMMMMMMMMMMMMMMMdo            +MM"<<endl;
+cout<<"mM+           yM.                       `mMMMMMMMMNh+-`   `:ohNMMMMMMMMMMMMMMMNds:`              +MM"<<endl;
+cout<<"mM+           yM.                       `mMMMMNho-`   `:odNMMMMMMMMMMMMMMMNdo:`  ./yd`           +MM"<<endl;
+cout<<"mM+           yM.                       `mmy+-`   `:ohNMMMMMMMMMMMMMMMNho:`  -/ymNMMN`           +MM"<<endl;
+cout<<"mM+           yM.                        .`   .:odNMMMMMMMMMMMMMMMNho:` `-+ymNMMMMMMN`           +MM"<<endl;
+cout<<"mM+           yM.                         .:sdNMMMMMMMMMMMMMMMNho:```-+ymNMMMMMMMMMMN`           +MM"<<endl;
+cout<<"mM+           yM.                        yNMMMMMMMMMMMMMMMNho:.``-+ymNMMMMMMMMMMMMMMm`           +MM"<<endl;
+cout<<"mM+           yM.                       `mMMMMMMMMMMMMmho:. `-+ymNMMMMMMMMMMMMMMNdy/.            +MM"<<endl;
+cout<<"mM+           yM.                       `mMMMMMMMMmho:.``-+ymNMMMMMMMMMMMMMMNdy/-`               +MM"<<endl;
+cout<<"mM+           yM.                       `mMMMMmho:. `-+ymNMMMMMMMMMMMMMMNds/.`                   +MM"<<endl;
+cout<<"mM+           yM.                       `dmho:.``-+ymNMMMMMMMMMMMMMMNdy/.`                       +MM"<<endl;
+cout<<"mM+           yM.                        .. .-+ymNMMMMMMMMMMMMMMNds/.`                           +MM"<<endl;
+cout<<"mM+           yM.                        -+hmNMMMMMMMMMMMMMMNds/-`                               +MM"<<endl;
+cout<<"mM+           +M+                       `dMMMMMMMMMMMMMMNds/.`                                   +MM"<<endl;
+cout<<"mM+           `sNo.                     `mMMMMMMMMMMNds/.`                                       +MM"<<endl;
+cout<<"mM+             :hdy:.`                 `mMMMMMMNds/.                                            +MM"<<endl;
+cout<<"mM+               -+hdhyo/:-...````````..mMMNds/.                                                +MM"<<endl;
+cout<<"mM+                  `-:+syhdhhhhhhhhhhhhhs/.                                                    +MM"<<endl;
+cout<<"mM+                           ``````````                                                         +MM"<<endl;
+cout<<"mM+                                                                                              +MM"<<endl;
+cout<<"mM+                                                                                              +MM"<<endl;
+cout<<"mM+                                                                                              +MM"<<endl;
+cout<<"mM+                                                                                              +MM"<<endl;
+cout<<"mMs----------------------------------------------------------------------------------------------oMN"<<endl;
+cout<<"/mMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMm+"<<endl;
+cout<<"the cake is a lie"<<endl;
+
+*/
