@@ -1,6 +1,7 @@
 #include "mbed.h"
 //
 //
+BO is in here 
 //   PIN DECLARATIONS
 //
 //
@@ -76,7 +77,7 @@ int main()
     enableH = 0;          //Making sure the H-Bridge starts low and off
     highH = 0;            //This starts high for the H-Bridge
     highL = 1;            //This starts low for the H-Bridge
-    float scale;          //A variable to scale the box size 
+    float scale;          //A variable to scale the box size
     int color;            //A variable to hold the color value
     //
     //
