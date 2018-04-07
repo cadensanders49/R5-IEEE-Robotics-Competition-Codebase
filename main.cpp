@@ -76,13 +76,14 @@ int main()
     enableH = 0;          // Making sure the H-Bridge starts low and off
     highH = 0;            // This starts high for the H-Bridge
     highL = 1;            // This starts low for the H-Bridge
-    double scale;          // A variable to scale the box size
+    double straightScale;          // A variable to scale the box size
+    double rightScale;
+    double leftScale;
     int color;            // A variable to hold the color value
-    double leg;
     int round = 1;        // Round number
     double straightLeg;
     double rightLeg;
-    double leftLeg
+    double leftLeg;
     //
     //
     //The start button
@@ -202,7 +203,7 @@ int main()
                 color = findColor();
                 if (color == 9)
                 {
-                  if(i % 2 = 0)
+                  if(i % 2 == 0)
                   {
                     move(straightLeg, FORWARD); //straight leg
                   }
@@ -214,7 +215,7 @@ int main()
                 else
                 {
                     findPathReturn(color, i, rightScale, leftScale, straightLeg, straightScale, leftLeg, rightLeg);
-                    if(i % 2 = 0)
+                    if(i % 2 == 0)
                     {
                       move(straightLeg, FORWARD); //straight leg
                     }
