@@ -63,6 +63,7 @@ const double J = (.9166666 - C)/2;  // side to side position of the robot in hom
 int red_value = 0;
 int green_value = 0;
 int blue_value = 0;
+int sensor_addr = 41 << 1;
 //
 //
 //   Main Function
@@ -113,32 +114,29 @@ int main()
     //   RGB Sensor Settings
     //
     //
-    pc.baud(115200);
-    green = 1; // off
     i2c.frequency(200000);
+
     char id_regval[1] = {146};
     char data[1] = {0};
     i2c.write(sensor_addr,id_regval,1, true);
     i2c.read(sensor_addr,data,1,false);
-    if (data[0]==68)
-    {
+
+    if (data[0]==68) {
         green = 0;
         wait (2);
         green = 1;
-    }
-    else
-    {
+        } else {
         green = 1;
     }
-    //
-    //
-    //    Initialize color sensor
-    //
-    //
+
+    // Initialize color sensor
+
     char timing_register[2] = {129,0};
     i2c.write(sensor_addr,timing_register,2,false);
+
     char control_register[2] = {143,0};
     i2c.write(sensor_addr,control_register,2,false);
+
     char enable_register[2] = {128,3};
     i2c.write(sensor_addr,enable_register,2,false);
     //
@@ -304,7 +302,7 @@ void grabToken()
     magDirection = 1;
     magArm.period(0.002);
     magArm.write(0.5);
-    wait(0.615);
+    wait(0.6);
     //
     //
     //   Stop moving the arm
@@ -329,7 +327,7 @@ void dropToken()
     magDirection = 0;
     magArm.period(0.002);
     magArm.write(0.5);
-    wait(0.615);
+    wait(0.6);
     //
     //
     //   Stop moving arm
@@ -480,29 +478,34 @@ int findColor()
     //   Loop to determine the color of the disk
     //
     //
-    for(int i=0; i<10; i++)
-    {
+    while (true) {
         char clear_reg[1] = {148};
         char clear_data[2] = {0,0};
         i2c.write(sensor_addr,clear_reg,1, true);
         i2c.read(sensor_addr,clear_data,2, false);
+
         int clear_value = ((int)clear_data[1] << 8) | clear_data[0];
+
         char red_reg[1] = {150};
         char red_data[2] = {0,0};
         i2c.write(sensor_addr,red_reg,1, true);
         i2c.read(sensor_addr,red_data,2, false);
-        red_value = ((int)red_data[1] << 8) | red_data[0];
+
+        int red_value = ((int)red_data[1] << 8) | red_data[0];
+
         char green_reg[1] = {152};
         char green_data[2] = {0,0};
         i2c.write(sensor_addr,green_reg,1, true);
         i2c.read(sensor_addr,green_data,2, false);
-        green_value = ((int)green_data[1] << 8) | green_data[0];
+
+        int green_value = ((int)green_data[1] << 8) | green_data[0];
+
         char blue_reg[1] = {154};
         char blue_data[2] = {0,0};
         i2c.write(sensor_addr,blue_reg,1, true);
         i2c.read(sensor_addr,blue_data,2, false);
-        blue_value = ((int)blue_data[1] << 8) | blue_data[0];
-    }
+
+        int blue_value = ((int)blue_data[1] << 8) | blue_data[0];
     //
     //   Return the color value from the reading
     //   1=red, 2=green, 3=blue, 4=cyan, 5=magenta, 6=yellow, 7=gray, 8=error, 9=nothing
@@ -525,6 +528,7 @@ int findColor()
     } else if(red_value==0) {
         return(8);
     }
+  }
 }
 //
 //
@@ -580,38 +584,42 @@ void findPathReturn(int color, int i, double rightScale, double leftScale, doubl
         dropToken();
         move((straightScale + B + E), BACKWARD);
         turnLeft();
-        move((straightLeg - B + E + straightScale), FORWARD);
+        move((straightLeg - B + E + straightScale + C), FORWARD);
         rot180();
-        move(C,BACKWARD);;
     }
     //
     //   condition for return red at index 2
     //
     if( i == 2 && color == 1 )
     {
-        rot180();
-        move((rightScale - C), FORWARD);
-        turnRight();
-        move((straightScale - B + E), FORWARD);
+        turnLeft();
+        move(leftScale - B + E, FORWARD);
+        turnLeft();
+        move(straightScale - B + E, FORWARD);
         dropToken();
-        move((straightScale + B + E), BACKWARD);
-        turnRight();
-        move((straightScale - B + E), FORWARD);
+        turnLeft();
+        move(leftScale - B + E, FORWARD);
+        turnLeft();
+        move(straightScale - B + E, FORWARD);
+
+
     }
     //
     //   condition for return red at index 4
     //
     if( i == 4 && color == 1 )
     {
-        turnRight();
-        move(2*straightLeg + rightScale, FORWARD);
-        turnRight();
-        move(straightScale - B + E , FORWARD);
+        rot180();
+        move(leftScale - C, FORWARD);
+        turnLeft();
+        move(2*straightLeg + straightScale - B + E, FORWARD);
         dropToken();
-        move(straightScale + B + E , BACKWARD);
+        move(B, BACKWARD);
+        turnLeft();
+        turnLeft();
+        move(2*straightLeg + rightScale - B, FORWARD);
         turnRight();
-        move(2*straightLeg + rightScale - B + E, FORWARD);
-        turnRight();
+        move(straightScale - 2*B, FORWARD);
     }
     //
     //   condition for return red at index 5
@@ -621,15 +629,14 @@ void findPathReturn(int color, int i, double rightScale, double leftScale, doubl
         rot180();
         move(straightLeg + leftScale - C, FORWARD);
         turnLeft();
-        move(2*straightLeg + rightScale - B + E, FORWARD);
-        turnRight();
-        move(straightLeg - B + E, FORWARD);
+        move(2*straightLeg + straightScale - B + E, FORWARD);
         dropToken();
-        move(straightLeg + B + E, BACKWARD);
+        move(B, BACKWARD);
+        turnLeft();
+        turnLeft();
+        move(2*straightLeg + rightScale - B, FORWARD);
         turnRight();
-        move(2*straightLeg + rightScale - B + E , FORWARD);
-        turnRight();
-        move(straightLeg - B + E, FORWARD);
+        move(straightScale - 2*B + straightLeg, FORWARD);
     }
     //
     //   condition for return red at index 6
@@ -697,42 +704,45 @@ void findPathReturn(int color, int i, double rightScale, double leftScale, doubl
     //
     if( i == 4 && color == 2 )
     {
-        turnRight();
-        move(2*straightLeg + straightScale, FORWARD);
-        turnLeft();
-        move(straightLeg, FORWARD);
+        move(rightLeg, FORWARD);
+        turnRight()
+        move(2*straightLeg + straightScale - B + E, FORWARD);
         dropToken();
+        move(straightScale, BACKWARD);
         rot180();
-        move(straightLeg, FORWARD);
-        turnRight();
-        move(2*straightLeg + straightScale, FORWARD);
-        turnRight();
+        move(2*straightLeg - C, FORWARD);
+        turnLeft();
+        move(straightLeg + C, FORWARD);
+        rot180();
     }
     //
     //   condition for return green at index 5
     //
     if( i == 5 && color == 2 )
     {
+        move(straightLeg - rightLeg, BACKWARD);
         turnRight();
-        move(2*straightLeg + straightScale, FORWARD);
+        move(2*straightLeg + straightScale - B + E, FORWARD);
         dropToken();
+        move(C, BACKWARD);
         rot180();
-        move(2*straightLeg + straightScale, FORWARD);
+        move(2*straightLeg + straightScale - (2*C), FORWARD);
         turnRight();
+        move(straightLeg - rightLeg, BACKWARD);
     }
     //
     //   condition for return green at index 6
     //
     if( i == 6 && color == 2 )
     {
-        move(2*straightLeg + straightScale, FORWARD);
+        move(2*straightLeg + rightScale, FORWARD);
         turnRight();
-        move(straightLeg + straightScale, FORWARD);
+        move(straightLeg - B + E, FORWARD);
         dropToken();
         rot180();
-        move(straightLeg + straightScale, FORWARD);
+        move(leftLeg - C, FORWARD);
         turnLeft();
-        move(straightLeg + straightScale, FORWARD);
+        move(2*straightLeg + straightScale - B + E - C, FORWARD);
         rot180();
     }
     //
@@ -744,15 +754,15 @@ void findPathReturn(int color, int i, double rightScale, double leftScale, doubl
     //
     if( i == 0 && color == 3 )
     {
-        rot180();
-        move(straightScale, FORWARD);
-        turnRight();
-        move(straightScale, FORWARD);
-        dropToken();
-        rot180();
-        move(straightScale, FORWARD);
+        turnLeft();
+        move(leftScale - B + E, FORWARD);
         turnLeft();
         move(straightScale, FORWARD);
+        dropToken();
+        move(straightScale + B + E, BACKWARD);
+        turnLeft();
+        move(leftScale - B + E, FORWARD);
+        turnLeft();
     }
     //
     //   condition for return blue at index 1
