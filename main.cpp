@@ -5,6 +5,8 @@
 //   PIN DECLARATIONS
 //
 //
+InterruptIn leftError(PTE19);      //line-follower to the left of the magnet
+InterruptIn rightError(PTE18);     // line-follower to the right of the magnet
 DigitalOut FLdirection(PTB18);    //Front left motor direction pin
 DigitalOut FRdirection(PTA4);     //Front right motor direction pin
 DigitalOut magDirection(PTB19);   //Magnet arm motor direction pin
@@ -76,13 +78,14 @@ int main()
     enableH = 0;          // Making sure the H-Bridge starts low and off
     highH = 0;            // This starts high for the H-Bridge
     highL = 1;            // This starts low for the H-Bridge
-    double scale;          // A variable to scale the box size
+    double straightScale;          // A variable to scale the box size
+    double rightScale;
+    double leftScale;
     int color;            // A variable to hold the color value
-    double leg;
     int round = 1;        // Round number
     double straightLeg;
     double rightLeg;
-    double leftLeg
+    double leftLeg;
     //
     //
     //The start button
@@ -200,14 +203,14 @@ int main()
               {
                 grabToken();
                 color = findColor();
-                if (color == 8) //no color found
+                if (color == 8)
                 {
                   kill();
                 }
                 else
                 {
                     findPathReturn(color, i, rightScale, leftScale, straightLeg, straightScale, leftLeg, rightLeg);
-                    if(i % 2 = 0)
+                    if(i % 2 == 0)
                     {
                       move(straightLeg, FORWARD); //straight leg
                     }
@@ -233,6 +236,12 @@ int main()
 //
 void move(double dist, bool direction)
 {
+    //
+    //
+    //Error check
+    //
+    //
+
     //
     //
     //  Define the direction
