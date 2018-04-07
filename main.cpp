@@ -63,7 +63,6 @@ const double J = (.9166666 - C)/2;  // side to side position of the robot in hom
 int red_value = 0;
 int green_value = 0;
 int blue_value = 0;
-int sensor_addr = 41 << 1;
 //
 //
 //   Main Function
@@ -114,29 +113,32 @@ int main()
     //   RGB Sensor Settings
     //
     //
+    pc.baud(115200);
+    green = 1; // off
     i2c.frequency(200000);
-
     char id_regval[1] = {146};
     char data[1] = {0};
     i2c.write(sensor_addr,id_regval,1, true);
     i2c.read(sensor_addr,data,1,false);
-
-    if (data[0]==68) {
+    if (data[0]==68)
+    {
         green = 0;
         wait (2);
         green = 1;
-        } else {
+    }
+    else
+    {
         green = 1;
     }
-
-    // Initialize color sensor
-
+    //
+    //
+    //    Initialize color sensor
+    //
+    //
     char timing_register[2] = {129,0};
     i2c.write(sensor_addr,timing_register,2,false);
-
     char control_register[2] = {143,0};
     i2c.write(sensor_addr,control_register,2,false);
-
     char enable_register[2] = {128,3};
     i2c.write(sensor_addr,enable_register,2,false);
     //
@@ -145,9 +147,9 @@ int main()
     //
     //
     move(2.0283333+H+A-D,FORWARD);
-    wait(2.5);
+    wait(0.5);
     turnRight();
-    wait(2.5);
+    wait(0.5);
     move(0.47916667+J+E,FORWARD);
     //
     //
@@ -207,9 +209,9 @@ int main()
               {
                 grabToken();
                 color = findColor();
-                if (color == 8)
+                if (color == 8 || color == 9)
                 {
-                  kill();
+                    findPathReturn(1, i, rightScale, leftScale, straightLeg, straightScale, leftLeg, rightLeg);
                 }
                 else
                 {
@@ -302,7 +304,7 @@ void grabToken()
     magDirection = 1;
     magArm.period(0.002);
     magArm.write(0.5);
-    wait(0.6);
+    wait(0.615);
     //
     //
     //   Stop moving the arm
@@ -327,7 +329,7 @@ void dropToken()
     magDirection = 0;
     magArm.period(0.002);
     magArm.write(0.5);
-    wait(0.6);
+    wait(0.615);
     //
     //
     //   Stop moving arm
@@ -478,34 +480,29 @@ int findColor()
     //   Loop to determine the color of the disk
     //
     //
-    while (true) {
+    for(int i=0; i<10; i++)
+    {
         char clear_reg[1] = {148};
         char clear_data[2] = {0,0};
         i2c.write(sensor_addr,clear_reg,1, true);
         i2c.read(sensor_addr,clear_data,2, false);
-
         int clear_value = ((int)clear_data[1] << 8) | clear_data[0];
-
         char red_reg[1] = {150};
         char red_data[2] = {0,0};
         i2c.write(sensor_addr,red_reg,1, true);
         i2c.read(sensor_addr,red_data,2, false);
-
-        int red_value = ((int)red_data[1] << 8) | red_data[0];
-
+        red_value = ((int)red_data[1] << 8) | red_data[0];
         char green_reg[1] = {152};
         char green_data[2] = {0,0};
         i2c.write(sensor_addr,green_reg,1, true);
         i2c.read(sensor_addr,green_data,2, false);
-
-        int green_value = ((int)green_data[1] << 8) | green_data[0];
-
+        green_value = ((int)green_data[1] << 8) | green_data[0];
         char blue_reg[1] = {154};
         char blue_data[2] = {0,0};
         i2c.write(sensor_addr,blue_reg,1, true);
         i2c.read(sensor_addr,blue_data,2, false);
-
-        int blue_value = ((int)blue_data[1] << 8) | blue_data[0];
+        blue_value = ((int)blue_data[1] << 8) | blue_data[0];
+    }
     //
     //   Return the color value from the reading
     //   1=red, 2=green, 3=blue, 4=cyan, 5=magenta, 6=yellow, 7=gray, 8=error, 9=nothing
@@ -527,8 +524,9 @@ int findColor()
         return(7);
     } else if(red_value==0) {
         return(8);
+    } else {
+        return(9);
     }
-  }
 }
 //
 //
@@ -705,7 +703,7 @@ void findPathReturn(int color, int i, double rightScale, double leftScale, doubl
     if( i == 4 && color == 2 )
     {
         move(rightLeg, FORWARD);
-        turnRight()
+        turnRight();
         move(2*straightLeg + straightScale - B + E, FORWARD);
         dropToken();
         move(straightScale, BACKWARD);
