@@ -8,9 +8,9 @@
 DigitalOut FLdirection(PTB18);    //Front left motor direction pin
 DigitalOut FRdirection(PTA4);     //Front right motor direction pin
 DigitalOut magDirection(PTB19);   //Magnet arm motor direction pin
-PwmOut stepFL(PTD3);              //Front left motor pwm speed pin
+PwmOut stepFL(PTA12);              //Front left motor pwm speed pin
 PwmOut stepFR(PTA5);              //Front right motor pwm speed pin
-PwmOut magArm(PTA12);             //Magnet arm motor pwm speed pin
+PwmOut magArm(PTA13);             //Magnet arm motor pwm speed pin
 InterruptIn killAll(PTC3);        //Button for the kill switch
 DigitalIn Start(PTC12);           //Button for starting the program
 DigitalOut enableH(PTA14);        //Enable pin for the H-Brdige, turns magnet on or off
@@ -43,7 +43,7 @@ void returnHome();                                            //Returns to the h
 const int FORWARD = 0;                //Sets a constant for choosing the forward direction
 const int BACKWARD = 1;               //Sets a constant for choosing the forward direction
 const double stepSize = 0.004090615436;    //In feet
-const double FREQUENCY = 700.0;          //Steps per second
+const double FREQUENCY = 500.0;          //Steps per second
 const int sensor_addr = 41 << 1;            //Calibration for the rgb sensor
 const int TIME = 300;                       //In seconds, this is where you input the round time duration
 Timeout timer;                        //Attach this to return home function, set according to round time
@@ -166,8 +166,8 @@ int main()
           rightLeg = straightLeg - D - E;      // length to travel before a right turn
           leftLeg = straightLeg - B - E;       // length to travel before a left turn
           straightScale = -(0.5*j)+3;
-          rightScale = -(0.5*j)+3 - D - E;
-          leftScale = -(0.5*j)+3 - B - E;
+          rightScale = straightScale - D - E;
+          leftScale = straightScale - B - E;
           //
           //   Round 1 Box Choices
           //
@@ -175,10 +175,9 @@ int main()
           {
             if (j == 4 || j ==2)
             {
-              move(0.5-D-B,FORWARD);
               turnRight();
-              move(0.5-D-B,FORWARD);
               turnLeft();
+              move(-0.5+D+B,BACKWARD);
               continue;
             }
           }
