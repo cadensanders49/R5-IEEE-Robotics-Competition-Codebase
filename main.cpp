@@ -13,12 +13,12 @@ PwmOut stepFR(PTA5);              //Front right motor pwm speed pin
 PwmOut magArm(PTA12);             //Magnet arm motor pwm speed pin
 InterruptIn killAll(PTC3);        //Button for the kill switch
 DigitalIn Start(PTC12);           //Button for starting the program
-DigitalOut enableH(PTC11);        //Enable pin for the H-Brdige, turns magnet on or off
+DigitalOut enableH(PTA14);        //Enable pin for the H-Brdige, turns magnet on or off
 DigitalOut highH(PTC10);          //One of the current direction control pins on the H-Bridge
 DigitalOut highL(PTC7);           //One of the current direction control pins on the H-Bridge
 I2C i2c(PTC9, PTC8);              //pins for I2C communication (SDA, SCL)
 Serial pc(USBTX, USBRX);          //Serial computer screen printing connection
-DigitalOut LED(PTC4);             //LED control pin for the RGB sensor
+DigitalOut LED(PTC6);             //LED control pin for the RGB sensor
 DigitalOut green(LED_GREEN);      //Control pin for the RGB sensor
 //
 //
@@ -54,7 +54,7 @@ const double C = 0.77604;    // length from wheel to wheel in feet
 const double D = 0.22396;    // length from right wheel to middle of magnet in feet
 const double E = 0.19792;    // length from right wheel to middle of magnet in feet
 const double H = 0.16666;    // length from home square edge
-const double J = C - (J/2);  // side to side position of the robot in home square
+const double J = (.9166666 - C)/2;  // side to side position of the robot in home square
 //
 //
 //   Main Function
@@ -200,16 +200,9 @@ int main()
               {
                 grabToken();
                 color = findColor();
-                if (color == 9)
+                if (color == 8) //no color found
                 {
-                  if(i % 2 = 0)
-                  {
-                    move(straightLeg, FORWARD); //straight leg
-                  }
-                  else
-                  {
-                    move(rightLeg, FORWARD); //right leg
-                  }
+                  kill();
                 }
                 else
                 {
