@@ -13,12 +13,12 @@ PwmOut stepFR(PTA5);              //Front right motor pwm speed pin
 PwmOut magArm(PTA12);             //Magnet arm motor pwm speed pin
 InterruptIn killAll(PTC3);        //Button for the kill switch
 DigitalIn Start(PTC12);           //Button for starting the program
-DigitalOut enableH(PTC11);        //Enable pin for the H-Brdige, turns magnet on or off
+DigitalOut enableH(PTA14);        //Enable pin for the H-Brdige, turns magnet on or off
 DigitalOut highH(PTC10);          //One of the current direction control pins on the H-Bridge
 DigitalOut highL(PTC7);           //One of the current direction control pins on the H-Bridge
 I2C i2c(PTC9, PTC8);              //pins for I2C communication (SDA, SCL)
 Serial pc(USBTX, USBRX);          //Serial computer screen printing connection
-DigitalOut LED(PTC4);             //LED control pin for the RGB sensor
+DigitalOut LED(PTC6);             //LED control pin for the RGB sensor
 DigitalOut green(LED_GREEN);      //Control pin for the RGB sensor
 //
 //
@@ -43,9 +43,9 @@ void returnHome();                                            //Returns to the h
 const int FORWARD = 0;                //Sets a constant for choosing the forward direction
 const int BACKWARD = 1;               //Sets a constant for choosing the forward direction
 const double stepSize = 0.004090615436;    //In feet
-const double FREQUENCY = 500.0;          //Steps per second
+const double FREQUENCY = 700.0;          //Steps per second
 const int sensor_addr = 41 << 1;            //Calibration for the rgb sensor
-const int TIME = 100;                       //In seconds, this is where you input the round time duration
+const int TIME = 300;                       //In seconds, this is where you input the round time duration
 Timeout timer;                        //Attach this to return home function, set according to round time
 const double pi = 3.141592653589;
 const double A = 0.13021;    // radius of wheel in feet
@@ -54,7 +54,15 @@ const double C = 0.77604;    // length from wheel to wheel in feet
 const double D = 0.22396;    // length from right wheel to middle of magnet in feet
 const double E = 0.19792;    // length from right wheel to middle of magnet in feet
 const double H = 0.16666;    // length from home square edge
-const double J = C - (J/2);  // side to side position of the robot in home square
+const double J = (.9166666 - C)/2;  // side to side position of the robot in home square
+//
+//
+//   GLOBAL VARIABLES
+//
+//
+int red_value = 0;
+int green_value = 0;
+int blue_value = 0;
 //
 //
 //   Main Function
@@ -201,16 +209,9 @@ int main()
               {
                 grabToken();
                 color = findColor();
-                if (color == 9)
+                if (color == 8)
                 {
-                  if(i % 2 == 0)
-                  {
-                    move(straightLeg, FORWARD); //straight leg
-                  }
-                  else
-                  {
-                    move(rightLeg, FORWARD); //right leg
-                  }
+                  kill();
                 }
                 else
                 {
@@ -241,6 +242,7 @@ int main()
 //
 void move(double dist, bool direction)
 {
+
     //
     //
     //  Define the direction
@@ -302,7 +304,7 @@ void grabToken()
     magDirection = 1;
     magArm.period(0.002);
     magArm.write(0.5);
-    wait(0.62);
+    wait(0.615);
     //
     //
     //   Stop moving the arm
@@ -327,7 +329,7 @@ void dropToken()
     magDirection = 0;
     magArm.period(0.002);
     magArm.write(0.5);
-    wait(0.62);
+    wait(0.615);
     //
     //
     //   Stop moving arm
@@ -478,8 +480,8 @@ int findColor()
     //   Loop to determine the color of the disk
     //
     //
-    while (true) {
-        wait(1);
+    for(int i=0; i<10; i++)
+    {
         char clear_reg[1] = {148};
         char clear_data[2] = {0,0};
         i2c.write(sensor_addr,clear_reg,1, true);
@@ -489,50 +491,39 @@ int findColor()
         char red_data[2] = {0,0};
         i2c.write(sensor_addr,red_reg,1, true);
         i2c.read(sensor_addr,red_data,2, false);
-        int red_value = ((int)red_data[1] << 8) | red_data[0];
+        red_value = ((int)red_data[1] << 8) | red_data[0];
         char green_reg[1] = {152};
         char green_data[2] = {0,0};
         i2c.write(sensor_addr,green_reg,1, true);
         i2c.read(sensor_addr,green_data,2, false);
-        int green_value = ((int)green_data[1] << 8) | green_data[0];
+        green_value = ((int)green_data[1] << 8) | green_data[0];
         char blue_reg[1] = {154};
         char blue_data[2] = {0,0};
         i2c.write(sensor_addr,blue_reg,1, true);
         i2c.read(sensor_addr,blue_data,2, false);
-        int blue_value = ((int)blue_data[1] << 8) | blue_data[0];
-        //
-        //
-        //   Return the color value from the reading
-        //
-        //
-        //   1=red, 2=green, 3=blue, 4=cyan, 5=magenta, 6=yellow, 7=gray, 8=error, 9=nothing
-        //
-        if(blue_value<10000 && red_value>10000) {
-            return(1);
-        } else if(green_value>18000 && blue_value<30000) {
-            return(2);
-        } else if(red_value<10000 && blue_value>15000) {
-            return(3);
-        } else if(blue_value>30000 && red_value<20000) {
-            return(4);
-        } else if(red_value>25000 && green_value<15000) {
-            return(5);
-        } else if(red_value>50000) {
-            return(6);
-        } else if(red_value<10000 && blue_value<10000) {
-            return(7);
-        } else if(red_value==0) {
-            return(8);
-        } else {
-            return(9);
-        }
-        //
-        //
-        // print sensor readings
-        //
-        //
-        //pc.printf("Clear (%d), Red (%d), Green (%d), Blue (%d)\n", clear_value, red_value, green_value, blue_value);
-        //wait(0.5);
+        blue_value = ((int)blue_data[1] << 8) | blue_data[0];
+    }
+    //
+    //   Return the color value from the reading
+    //   1=red, 2=green, 3=blue, 4=cyan, 5=magenta, 6=yellow, 7=gray, 8=error, 9=nothing
+    //
+    //
+    if(blue_value<10000 && red_value>10000) {
+        return(1);
+    } else if(green_value>18000 && blue_value<30000) {
+        return(2);
+    } else if(red_value<10000 && blue_value>15000) {
+        return(3);
+    } else if(blue_value>30000 && red_value<20000) {
+        return(4);
+    } else if(red_value>25000 && green_value<15000) {
+        return(5);
+    } else if(red_value>50000) {
+        return(6);
+    } else if(red_value<10000 && blue_value<10000) {
+        return(7);
+    } else if(red_value==0) {
+        return(8);
     }
 }
 //
@@ -557,7 +548,7 @@ int findColor()
 //    0        7         6
 //
 //
-void findPathReturn(int color, int i, double rightsScale, double leftScale, double straightLeg, double straightScale, double leftLeg, double rightLeg)
+void findPathReturn(int color, int i, double rightScale, double leftScale, double straightLeg, double straightScale, double leftLeg, double rightLeg)
 {
     //
     //
@@ -570,11 +561,11 @@ void findPathReturn(int color, int i, double rightsScale, double leftScale, doub
     {
         move((2*straightLeg + leftScale), FORWARD);
         turnLeft();
-        move(straightScale - B + E, FORWARD);
+        move((straightScale - B + E), FORWARD);
         dropToken();
-        move(straightScale + B + E, BACKWARD);
+        move((straightScale + B + E), BACKWARD);
         turnLeft();
-        move(2*straightLeg - B + E + straightScale, FORWARD);
+        move((2*straightLeg - B + E + straightScale), FORWARD);
         rot180();
         move(C,BACKWARD);
     }
@@ -583,15 +574,15 @@ void findPathReturn(int color, int i, double rightsScale, double leftScale, doub
     //
     if( i == 1 && color == 1 )
     {
-        move((straightLeg + straightScale), FORWARD);
+        move((straightLeg + leftScale), FORWARD);
         turnLeft();
-        move((straightScale), FORWARD);
+        move((straightScale - B + E), FORWARD);
         dropToken();
+        move((straightScale + B + E), BACKWARD);
+        turnLeft();
+        move((straightLeg - B + E + straightScale), FORWARD);
         rot180();
-        move((straightScale), FORWARD);
-        turnRight();
-        move((straightLeg + straightScale), FORWARD);
-        rot180();
+        move(C,BACKWARD);;
     }
     //
     //   condition for return red at index 2
@@ -599,14 +590,13 @@ void findPathReturn(int color, int i, double rightsScale, double leftScale, doub
     if( i == 2 && color == 1 )
     {
         rot180();
-        move((straightScale), FORWARD);
+        move((rightScale - C), FORWARD);
         turnRight();
-        move((straightScale), FORWARD);
+        move((straightScale - B + E), FORWARD);
         dropToken();
-        rot180();
-        move((straightScale), FORWARD);
-        turnLeft();
-        move((straightScale), FORWARD);
+        move((straightScale + B + E), BACKWARD);
+        turnRight();
+        move((straightScale - B + E), FORWARD);
     }
     //
     //   condition for return red at index 4
@@ -614,14 +604,13 @@ void findPathReturn(int color, int i, double rightsScale, double leftScale, doub
     if( i == 4 && color == 1 )
     {
         turnRight();
-        move(2*straightLeg + straightScale, FORWARD);
+        move(2*straightLeg + rightScale, FORWARD);
         turnRight();
-        move(straightScale, FORWARD);
+        move(straightScale - B + E , FORWARD);
         dropToken();
-        rot180();
-        move(straightScale, FORWARD);
-        turnLeft();
-        move(2*straightLeg + straightScale, FORWARD);
+        move(straightScale + B + E , BACKWARD);
+        turnRight();
+        move(2*straightLeg + rightScale - B + E, FORWARD);
         turnRight();
     }
     //
@@ -630,29 +619,33 @@ void findPathReturn(int color, int i, double rightsScale, double leftScale, doub
     if( i == 5 && color == 1 )
     {
         rot180();
-        move(straightLeg + straightScale, FORWARD);
+        move(straightLeg + leftScale - C, FORWARD);
         turnLeft();
-        move(2*straightLeg + straightScale, FORWARD);
-        dropToken();
-        rot180();
-        move(2*straightLeg + straightScale, FORWARD);
+        move(2*straightLeg + rightScale - B + E, FORWARD);
         turnRight();
-        move(straightLeg + straightScale, FORWARD);
+        move(straightLeg - B + E, FORWARD);
+        dropToken();
+        move(straightLeg + B + E, BACKWARD);
+        turnRight();
+        move(2*straightLeg + rightScale - B + E , FORWARD);
+        turnRight();
+        move(straightLeg - B + E, FORWARD);
     }
     //
     //   condition for return red at index 6
     //
     if( i == 6 && color == 1 )
     {
+        move(2*straightLeg + rightScale, FORWARD);
         turnRight();
-        move(2*straightLeg + straightScale, FORWARD);
-        turnLeft();
-        move(2*straightLeg + straightScale, FORWARD);
+        move(2*straightLeg + straightScale - B + E, FORWARD);
         dropToken();
+        move(C, BACKWARD);
         rot180();
-        move(2*straightLeg + straightScale, FORWARD);
-        turnRight();
-        move(2*straightLeg + straightScale, FORWARD);
+        move(2*straightLeg + leftScale - (2 * C), FORWARD);
+        turnLeft();
+        move(2*straightLeg + straightScale - B + E + C, FORWARD);
+        rot180();
     }
     //
     //
@@ -663,14 +656,13 @@ void findPathReturn(int color, int i, double rightsScale, double leftScale, doub
     //
     if( i == 0 && color == 2 )
     {
-        move(straightLeg, FORWARD);
+        move(leftLeg, FORWARD);
         turnLeft();
-        move(straightScale, FORWARD);
+        move(straightScale - B + E, FORWARD);
         dropToken();
-        rot180();
-        move(straightScale, FORWARD);
-        turnRight();
-        move(straightLeg, FORWARD);
+        move(straightScale + B + E, BACKWARD);
+        turnLeft();
+        move(straightLeg + C, FORWARD);
         rot180();
     }
     //
@@ -679,10 +671,11 @@ void findPathReturn(int color, int i, double rightsScale, double leftScale, doub
     if( i == 1 && color == 2 )
     {
         turnLeft();
-        move(straightScale, FORWARD);
+        move(leftScale, FORWARD);
         dropToken();
+        move(C, BACKWARD);
         rot180();
-        move(straightScale, FORWARD);
+        move(leftScale - (2 * C), FORWARD);
         turnLeft();
     }
     //
@@ -690,16 +683,14 @@ void findPathReturn(int color, int i, double rightsScale, double leftScale, doub
     //
     if( i == 2 && color == 2 )
     {
-        turnRight();
-        move(straightLeg, FORWARD);
-        turnRight();
-        move(straightScale, FORWARD);
-        dropToken();
         rot180();
-        move(straightScale, FORWARD);
-        turnLeft();
-        move(straightLeg, FORWARD);
+        move(rightLeg - C, FORWARD);
         turnRight();
+        move(straightScale - B + E, FORWARD);
+        dropToken();
+        move(straightScale + B + E, BACKWARD);
+        turnRight();
+        move(straightScale - B + E, FORWARD);
     }
     //
     //   condition for return green at index 4
@@ -1233,64 +1224,5 @@ void findPathReturn(int color, int i, double rightsScale, double leftScale, doub
 //
 void returnHome()
 {
-// Caden is booty
+
 }
-
-
-
-/*
-
-cout<<" /dNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNm+"<<endl;
-cout<<"mMs::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::sMN"<<endl;
-cout<<"mM+                                                                                              +MM"<<endl;
-cout<<"mM+                                                                                              +MM"<<endl;
-cout<<"mM+                                                                                              +MM"<<endl;
-cout<<"mM+                                                                                              +MM"<<endl;
-cout<<"mM+                                     -s-                                                      +MM"<<endl;
-cout<<"mM+                                     /NN:                                                     +MM"<<endl;
-cout<<"mM+                                      -yN+                                                    +MM"<<endl;
-cout<<"mM+                                       `+Mo                                                   +MM"<<endl;
-cout<<"mM+                                      `/yy-                                                   +MM"<<endl;
-cout<<"mM+                             `..`   `+yo.                                                     +MM"<<endl;
-cout<<"mM+                          `/ydmmmd:`o+.                                    ``..--             +MM"<<endl;
-cout<<"mM+                         -dMMMMMMy/ymmdy:                      ``..-:/+osyhdmmmds             +MM"<<endl;
-cout<<"mM+                    `:oo`mMMMMMMs/NMMMMMN/         ```.--:/osyhhhhhhyyyhdNmds/-.-+`           +MM"<<endl;
-cout<<"mM+                  `+dNs`:MMMMMMMNNMMMMMMMm `-:/+ssyhhhhhyyo+/:--..-/shdho:..-ohmMN`           +MM"<<endl;
-cout<<"mM+                  yMMs  /MMMMMMMMMMMMMMMMm :dNmyo+:-.``      `-+yhdy+-..-ohmMMMMMN`           +MM"<<endl;
-cout<<"mM+                ``oMMs  `mMMMMMMMMMMMMMMMs   :NMNm:     `.:oydds/-``:ohmMMMMMMMMMN`           +MM"<<endl;
-cout<<"mM+           -+syyhh-+NN.  -dNMMMMMMMMMMNm+   `+NNm+` `./shdho:.``:ohmMMMMMMMMMMMMMN`           +MM"<<endl;
-cout<<"mM+           yMN+-..  -hs  +y/ohdmNNmdy+:`  `odms:.-+yhdy+:```:ohNMMMMMMMMMMMMMMMNdo            +MM"<<endl;
-cout<<"mM+           yMdms-`    .  `ym+.``.-:/      :+::oydds/-` `:ohNMMMMMMMMMMMMMMMNds:.              +MM"<<endl;
-cout<<"mM+           yM.-smds/-``    +mNmdmds-   `./shmho:.  `:ohNMMMMMMMMMMMMMMMNdo:.   `-/`           +MM"<<endl;
-cout<<"mM+           yM.   -+sdmdhsso++yhy+////+ydmy+-`  `:odNMMMMMMMMMMMMMMMNdo:`   `-+ymMN`           +MM"<<endl;
-cout<<"mM+           yM.        .-:/+ossssysssss/.   `:sdNMMMMMMMMMMMMMMMNdo:`   `-ohNMMMMMN`           +MM"<<endl;
-cout<<"mM+           yM.                         `:sdNMMMMMMMMMMMMMMMNdo:`   `-ohNMMMMMMMMMN`           +MM"<<endl;
-cout<<"mM+           yM.                        yMMMMMMMMMMMMMMMMNho-`   `-ohNMMMMMMMMMMMMMN`           +MM"<<endl;
-cout<<"mM+           yM.                       `mMMMMMMMMMMMMNho-`   `-ohNMMMMMMMMMMMMMMMMdo            +MM"<<endl;
-cout<<"mM+           yM.                       `mMMMMMMMMNh+-`   `:ohNMMMMMMMMMMMMMMMNds:`              +MM"<<endl;
-cout<<"mM+           yM.                       `mMMMMNho-`   `:odNMMMMMMMMMMMMMMMNdo:`  ./yd`           +MM"<<endl;
-cout<<"mM+           yM.                       `mmy+-`   `:ohNMMMMMMMMMMMMMMMNho:`  -/ymNMMN`           +MM"<<endl;
-cout<<"mM+           yM.                        .`   .:odNMMMMMMMMMMMMMMMNho:` `-+ymNMMMMMMN`           +MM"<<endl;
-cout<<"mM+           yM.                         .:sdNMMMMMMMMMMMMMMMNho:```-+ymNMMMMMMMMMMN`           +MM"<<endl;
-cout<<"mM+           yM.                        yNMMMMMMMMMMMMMMMNho:.``-+ymNMMMMMMMMMMMMMMm`           +MM"<<endl;
-cout<<"mM+           yM.                       `mMMMMMMMMMMMMmho:. `-+ymNMMMMMMMMMMMMMMNdy/.            +MM"<<endl;
-cout<<"mM+           yM.                       `mMMMMMMMMmho:.``-+ymNMMMMMMMMMMMMMMNdy/-`               +MM"<<endl;
-cout<<"mM+           yM.                       `mMMMMmho:. `-+ymNMMMMMMMMMMMMMMNds/.`                   +MM"<<endl;
-cout<<"mM+           yM.                       `dmho:.``-+ymNMMMMMMMMMMMMMMNdy/.`                       +MM"<<endl;
-cout<<"mM+           yM.                        .. .-+ymNMMMMMMMMMMMMMMNds/.`                           +MM"<<endl;
-cout<<"mM+           yM.                        -+hmNMMMMMMMMMMMMMMNds/-`                               +MM"<<endl;
-cout<<"mM+           +M+                       `dMMMMMMMMMMMMMMNds/.`                                   +MM"<<endl;
-cout<<"mM+           `sNo.                     `mMMMMMMMMMMNds/.`                                       +MM"<<endl;
-cout<<"mM+             :hdy:.`                 `mMMMMMMNds/.                                            +MM"<<endl;
-cout<<"mM+               -+hdhyo/:-...````````..mMMNds/.                                                +MM"<<endl;
-cout<<"mM+                  `-:+syhdhhhhhhhhhhhhhs/.                                                    +MM"<<endl;
-cout<<"mM+                           ``````````                                                         +MM"<<endl;
-cout<<"mM+                                                                                              +MM"<<endl;
-cout<<"mM+                                                                                              +MM"<<endl;
-cout<<"mM+                                                                                              +MM"<<endl;
-cout<<"mM+                                                                                              +MM"<<endl;
-cout<<"mMs----------------------------------------------------------------------------------------------oMN"<<endl;
-cout<<"/mMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMm+"<<endl;
-cout<<"the cake is a lie"<<endl;
-
-*/
